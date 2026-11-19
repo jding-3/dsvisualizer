@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FolderOpen, Link2, MousePointer2, Pencil, RotateCcw, Share2, Trash2 } from 'lucide-react'
+import { FolderOpen, Grid3X3, Link2, MousePointer2, Pencil, RotateCcw, Share2, Trash2 } from 'lucide-react'
 import { MAX_TITLE_LENGTH } from '../shared/graph'
 import { traverse } from './algorithms/traversal'
 import type { Algorithm } from './algorithms/traversal'
 import { getGraph, saveGraph } from './api'
+import { AdjacencyMatrix } from './components/AdjacencyMatrix'
 import { GraphCanvas, GraphLegend } from './components/GraphCanvas'
 import { SavedGraphs, ShareGraph } from './components/GraphDialogs'
 import { Inspector } from './components/Inspector'
@@ -107,6 +108,7 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
   editor: ReturnType<typeof useGraphEditor>; algorithm: Algorithm; revision: number; loading: boolean; onAlgorithm: (algorithm: Algorithm) => void
 }) {
   const { graph, start, target, tool, selected } = editor
+  const [matrixOpen, setMatrixOpen] = useState(false)
   const steps = useMemo(() => traverse(graph, algorithm, start, target), [graph, algorithm, start, target])
   const playback = usePlayback(steps.length, revision)
   const toolHint = tool === 'node' ? 'Click to add a node. Drag to move it.'
@@ -126,6 +128,7 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
         <div className="graph-options">
           <button type="button" role="switch" aria-label="Directed graph" aria-checked={graph.isDirected} disabled={loading} onClick={editor.toggleDirected}>Directed <span className="switch" /></button>
           <button type="button" role="switch" aria-label="Weighted graph" aria-checked={graph.isWeighted} disabled={loading} onClick={editor.toggleWeighted}>Weighted <span className="switch" /></button>
+          <button type="button" className="matrix-trigger" aria-label="Adjacency matrix" aria-haspopup="dialog" disabled={loading} onClick={() => setMatrixOpen(true)}><Grid3X3 size={15} /> Matrix</button>
         </div>
       </header>
       <div className={`plot${loading ? ' canvas-loading' : ''}`} inert={loading || undefined}>
@@ -138,5 +141,7 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
     <Playback playback={playback} length={steps.length} />
     <Inspector graph={graph} algorithm={algorithm} start={start} target={target} setAlgorithm={onAlgorithm}
       setStart={editor.setStart} setTarget={editor.setTarget} steps={steps} index={playback.index} seek={playback.seek} />
+    {matrixOpen && <AdjacencyMatrix graph={graph} onAdd={editor.addEdge} onRemove={editor.removeEdge}
+      onReverse={editor.reverseEdge} onClose={() => setMatrixOpen(false)} />}
   </div>
 }

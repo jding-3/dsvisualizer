@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('builds a directed weighted graph and opens its snapshot in a fresh browser', async ({ page, browser, context }) => {
+test('reverses a weighted edge in the matrix and opens its snapshot in a fresh browser', async ({ page, browser, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await page.goto('/')
   await expect(page).toHaveTitle(/GraphLab/)
@@ -16,6 +16,20 @@ test('builds a directed weighted graph and opens its snapshot in a fresh browser
   const weight = page.getByRole('textbox', { name: 'Weight A to B' })
   await weight.fill('2.5')
   await weight.press('Enter')
+  await page.getByRole('button', { name: 'Adjacency matrix' }).click()
+  const matrix = page.getByRole('dialog', { name: 'Adjacency matrix' })
+  const forward = matrix.getByRole('button', { name: 'A to B', exact: true })
+  const reverse = matrix.getByRole('button', { name: 'B to A', exact: true })
+  await expect(forward).toHaveText('2.5')
+  await forward.click()
+  await matrix.getByRole('button', { name: 'Reverse edge' }).click()
+  await expect(forward).toHaveAccessibleDescription('No edge')
+  await expect(reverse).toHaveText('2.5')
+  await expect(reverse).toBeFocused()
+  await matrix.getByRole('button', { name: 'Done' }).click()
+  await expect(page.getByRole('textbox', { name: 'Weight B to A' })).toHaveValue('2.5')
+  await page.getByRole('slider', { name: 'Playback position' }).press('End')
+  await expect(page.locator('button[aria-current=step]')).toContainText('no path from A to B')
   await page.getByRole('textbox', { name: 'Graph title' }).fill('Shared example')
   await page.getByRole('button', { name: 'Save & Share' }).click()
   const link = page.getByRole('textbox', { name: 'Share URL' })
@@ -27,13 +41,41 @@ test('builds a directed weighted graph and opens its snapshot in a fresh browser
   try {
     await fresh.goto(savedUrl)
     await expect(fresh.getByRole('textbox', { name: 'Graph title' })).toHaveValue('Shared example')
-    await expect(fresh.getByRole('textbox', { name: 'Weight A to B' })).toHaveValue('2.5')
+    await expect(fresh.getByRole('textbox', { name: 'Weight B to A' })).toHaveValue('2.5')
     await expect(fresh.getByRole('switch', { name: 'Directed graph' })).toBeChecked()
     await fresh.getByRole('button', { name: 'Saved graphs' }).click()
     await expect(fresh.getByRole('link', { name: /Shared example/ }).first()).toBeVisible()
   } finally {
     await fresh.close()
   }
+})
+
+test('adds and removes mirrored and reciprocal edges with the matrix', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Adjacency matrix' }).click()
+  const matrix = page.getByRole('dialog', { name: 'Adjacency matrix' })
+  const forward = matrix.getByRole('button', { name: 'A to B', exact: true })
+  const reverse = matrix.getByRole('button', { name: 'B to A', exact: true })
+  await expect(forward).toHaveText('1')
+  await expect(reverse).toHaveText('1')
+  await forward.click()
+  await forward.press('ArrowDown')
+  await matrix.getByRole('button', { name: 'B to B', exact: true }).press('ArrowLeft')
+  await expect(reverse).toBeFocused()
+  await matrix.getByRole('button', { name: 'Remove edge' }).click()
+  await expect(forward).toHaveText('0')
+  await expect(reverse).toHaveText('0')
+  await matrix.getByRole('button', { name: 'Add edge' }).click()
+  await expect(forward).toHaveText('1')
+  await matrix.getByRole('button', { name: 'Done' }).click()
+  await page.getByRole('switch', { name: 'Directed graph' }).click()
+  await page.getByRole('button', { name: 'Adjacency matrix' }).click()
+  await expect(reverse).toHaveText('1')
+  await forward.click()
+  await matrix.getByRole('button', { name: 'Add edge' }).click()
+  await expect(matrix.getByRole('button', { name: 'Reverse edge' })).toBeDisabled()
+  await matrix.getByRole('button', { name: 'Remove edge' }).click()
+  await expect(reverse).toHaveText('1')
 })
 
 test('drags nodes and plays, reverses, and resets both traversals', async ({ page }) => {

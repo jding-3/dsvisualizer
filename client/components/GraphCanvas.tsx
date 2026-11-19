@@ -3,6 +3,7 @@ import type { PointerEvent } from 'react'
 import { GRAPH_HEIGHT, GRAPH_WIDTH } from '../../shared/graph'
 import type { Graph, GraphNode } from '../../shared/graph'
 import type { Step } from '../algorithms/traversal'
+import { edgeKey } from '../edgeKey'
 
 export type Tool = 'node' | 'edge'
 type Point = { x: number; y: number }
@@ -90,9 +91,8 @@ export function GraphCanvas({ graph, step, start, target, tool, selected, onAddN
   const pathNodes = new Set(step?.path?.nodes)
   const pathEdges = new Set(step?.path?.edges)
   const edgeGroups = new Map<string, string[]>()
-  const groupFor = (source: string, target: string) => [source, target].sort().join(':')
   for (const edge of graph.edges) {
-    const key = groupFor(edge.source, edge.target)
+    const key = edgeKey(edge.source, edge.target, false)
     const group = edgeGroups.get(key) ?? []
     group.push(edge.id)
     edgeGroups.set(key, group)
@@ -157,7 +157,7 @@ export function GraphCanvas({ graph, step, start, target, tool, selected, onAddN
           const source = nodes.get(edge.source)
           const targetNode = nodes.get(edge.target)
           if (!source || !targetNode) return null
-          const group = edgeGroups.get(groupFor(edge.source, edge.target)) ?? []
+          const group = edgeGroups.get(edgeKey(edge.source, edge.target, false)) ?? []
           const offset = (group.indexOf(edge.id) - (group.length - 1) / 2) * 38 * (edge.source <= edge.target ? 1 : -1)
           const geometry = edgeGeometry(source, targetNode, offset, edge.source === edge.target)
           const status = pathEdges.has(edge.id) ? 'path' : step?.activeEdge === edge.id ? 'active' : 'unvisited'

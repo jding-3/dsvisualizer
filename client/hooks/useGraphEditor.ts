@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MAX_EDGES, MAX_NODES } from '../../shared/graph'
 import type { Graph, GraphNode } from '../../shared/graph'
 import type { Tool } from '../components/GraphCanvas'
+import { edgeKey } from '../edgeKey'
 import { emptyGraph, sampleGraph } from '../sample'
 
 type Point = Pick<GraphNode, 'x' | 'y'>
@@ -44,13 +45,33 @@ export function useGraphEditor(initial: Graph, reset: () => void, notify: (messa
   function clickNode(id: string) {
     if (selected === id) return setSelected(null)
     if (tool !== 'edge' || !selected) return setSelected(id)
-    const exists = graph.edges.some((edge) => (edge.source === selected && edge.target === id)
-      || (!graph.isDirected && edge.source === id && edge.target === selected))
     setSelected(null)
+    addEdge(selected, id)
+  }
+
+  function addEdge(source: string, target: string) {
+    const key = edgeKey(source, target, graph.isDirected)
+    const exists = graph.edges.some((edge) => edgeKey(edge.source, edge.target, graph.isDirected) === key)
     if (exists) return notify('These nodes already have an edge in that direction.')
     if (graph.edges.length >= MAX_EDGES) return notify(`A graph can contain up to ${MAX_EDGES} edges.`)
-    const edge = { id: crypto.randomUUID(), source: selected, target: id, weight: 1 }
-    setGraph({ ...graph, edges: [...graph.edges, edge] })
+    const edge = { id: crypto.randomUUID(), source, target, weight: 1 }
+    setGraph((previous) => ({ ...previous, edges: [...previous.edges, edge] }))
+    reset()
+  }
+
+  function removeEdge(id: string) {
+    setGraph((previous) => ({ ...previous, edges: previous.edges.filter((edge) => edge.id !== id) }))
+    reset()
+  }
+
+  function reverseEdge(id: string) {
+    const edge = graph.edges.find((candidate) => candidate.id === id)
+    if (!graph.isDirected || !edge || edge.source === edge.target) return
+    if (graph.edges.some((candidate) => candidate.source === edge.target && candidate.target === edge.source)) {
+      return notify('Remove the opposite edge before reversing this one.')
+    }
+    const reversed = { ...edge, source: edge.target, target: edge.source }
+    setGraph((previous) => ({ ...previous, edges: previous.edges.map((candidate) => candidate.id === id ? reversed : candidate) }))
     reset()
   }
 
@@ -66,7 +87,7 @@ export function useGraphEditor(initial: Graph, reset: () => void, notify: (messa
   }
 
   return {
-    graph, start, target, tool, selected, load, addNode, clickNode, removeNode,
+    graph, start, target, tool, selected, load, addNode, clickNode, removeNode, addEdge, removeEdge, reverseEdge,
     clear: () => load({ ...emptyGraph, isDirected: graph.isDirected, isWeighted: graph.isWeighted }),
     loadSample: () => load(sampleGraph),
     setTitle: (title: string) => setGraph((previous) => ({ ...previous, title })),
