@@ -135,7 +135,7 @@ svg { flex-shrink: 0; }
 .transport .icon-button { width: 27px; min-height: 30px; border-color: transparent; }
 .play-button { min-width: 61px; min-height: 30px; padding-inline: 6px; border-radius: 16px; font-size: 13px; }
 .speed-control { order: 2; gap: 4px; color: var(--muted); font-size: 12px; }
-.speed-control input { width: 35px; }
+.speed-control input { width: clamp(52px, 8vw, 112px); }
 .speed-control output { min-width: 24px; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
 input[type='range'] { accent-color: var(--accent); cursor: pointer; margin: 0; }
 .timeline { order: 1; flex: 1; min-width: 0; gap: 8px; color: var(--muted); font-size: 13px; }
