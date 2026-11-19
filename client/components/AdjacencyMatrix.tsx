@@ -7,6 +7,7 @@ import { edgeKey } from '../edgeKey'
 
 interface MatrixProps {
   graph: Graph
+  onPreview: (pair: { source: string; target: string } | null) => void
   onAdd: (source: string, target: string) => void
   onRemove: (id: string) => void
   onReverse: (id: string) => void
@@ -16,7 +17,7 @@ const arrowOffsets: Record<string, [number, number] | undefined> = {
   ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1],
 }
 
-export function AdjacencyMatrix({ graph, onAdd, onRemove, onReverse }: MatrixProps) {
+export function AdjacencyMatrix({ graph, onPreview, onAdd, onRemove, onReverse }: MatrixProps) {
   const { nodes, edges, isDirected, isWeighted } = graph
   const [selection, setSelection] = useState<{ source: string; target: string } | null>(null)
   const row = nodes.findIndex(({ id }) => id === selection?.source)
@@ -75,7 +76,13 @@ export function AdjacencyMatrix({ graph, onAdd, onRemove, onReverse }: MatrixPro
               return <td key={to.id}>
                 <button type="button" className={count ? 'matrix-cell has-edge' : 'matrix-cell'} aria-pressed={active}
                   aria-label={`${from.label} to ${to.label}`} aria-description={detail} title={detail} tabIndex={active ? 0 : -1}
-                  onFocus={() => setSelection({ source: from.id, target: to.id })}
+                  onMouseEnter={() => onPreview({ source: from.id, target: to.id })}
+                  onMouseLeave={() => onPreview(null)}
+                  onFocus={(event) => {
+                    setSelection({ source: from.id, target: to.id })
+                    if (event.currentTarget.matches(':focus-visible')) onPreview({ source: from.id, target: to.id })
+                  }}
+                  onBlur={() => onPreview(null)}
                   onClick={() => setSelection({ source: from.id, target: to.id })}
                   onKeyDown={(event) => moveFocus(event, row, column)}><span>{value}</span></button>
               </td>

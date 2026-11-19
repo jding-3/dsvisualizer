@@ -11,6 +11,7 @@ import { Inspector } from './components/Inspector'
 import { Playback } from './components/Playback'
 import { useGraphEditor } from './hooks/useGraphEditor'
 import { usePlayback } from './hooks/usePlayback'
+import { edgeKey } from './edgeKey'
 import { emptyGraph, sampleGraph } from './sample'
 
 const shareId = /^\/graph\/([^/]+)\/?$/.exec(window.location.pathname)?.[1]
@@ -108,6 +109,10 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
   editor: ReturnType<typeof useGraphEditor>; algorithm: Algorithm; revision: number; loading: boolean; onAlgorithm: (algorithm: Algorithm) => void
 }) {
   const { graph, start, target, tool, selected } = editor
+  const [preview, setPreview] = useState<{ source: string; target: string } | null>(null)
+  const highlightedEdges = preview ? graph.edges.filter((edge) =>
+    edgeKey(edge.source, edge.target, graph.isDirected) === edgeKey(preview.source, preview.target, graph.isDirected),
+  ).map(({ id }) => id) : []
   const steps = useMemo(() => traverse(graph, algorithm, start, target), [graph, algorithm, start, target])
   const playback = usePlayback(steps.length, revision)
   const toolHint = tool === 'node' ? 'Click to add a node. Drag to move it.'
@@ -129,12 +134,12 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
         </div>
       </header>
       <div className={`plot${loading ? ' canvas-loading' : ''}`} inert={loading || undefined}>
-        <GraphCanvas graph={graph} step={steps[playback.index]} start={start} target={target} tool={tool} selected={selected}
+        <GraphCanvas graph={graph} highlightedEdges={highlightedEdges} step={steps[playback.index]} start={start} target={target} tool={tool} selected={selected}
           onAddNode={editor.addNode} onMoveNode={editor.moveNode} onNodeClick={editor.clickNode} onRemoveNode={editor.removeNode} onWeight={editor.setWeight} />
       </div>
       <footer className="canvas-footer"><GraphLegend /><span className="canvas-hint">{toolHint}</span></footer>
     </section>
-    <AdjacencyMatrix graph={graph} onAdd={editor.addEdge} onRemove={editor.removeEdge} onReverse={editor.reverseEdge} />
+    <AdjacencyMatrix graph={graph} onPreview={setPreview} onAdd={editor.addEdge} onRemove={editor.removeEdge} onReverse={editor.reverseEdge} />
     <Inspector graph={graph} algorithm={algorithm} start={start} target={target} setAlgorithm={onAlgorithm}
       setStart={editor.setStart} setTarget={editor.setTarget} steps={steps} index={playback.index} seek={playback.seek}
       playback={<Playback playback={playback} length={steps.length} />} />

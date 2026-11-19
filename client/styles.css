@@ -101,6 +101,7 @@ svg { flex-shrink: 0; }
 .ruler-notch { stroke: #899bd0; stroke-width: 1; }
 .graph-edge { fill: none; stroke: var(--state-color); stroke-width: 1.7; pointer-events: none; }
 .graph-edge.state-active, .graph-edge.state-path { stroke-width: 3.3; }
+.graph-edge.matrix-highlight { stroke: #9b4715; stroke-width: 4.5; }
 .graph-arrow { fill: var(--state-color); }
 .state-unvisited { --state-color: #6573a3; --state-fill: #fbfbff; --state-ink: #273663; }
 .state-frontier { --state-color: #a75917; --state-fill: #fff0d3; --state-ink: #77390c; }

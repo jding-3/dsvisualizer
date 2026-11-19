@@ -67,6 +67,7 @@ function WeightInput({ label, weight, onCommit }: { label: string; weight: numbe
 
 interface CanvasProps {
   graph: Graph
+  highlightedEdges: string[]
   step: Step | undefined
   start: string
   target: string
@@ -79,7 +80,7 @@ interface CanvasProps {
   onWeight: (id: string, weight: number) => void
 }
 
-export function GraphCanvas({ graph, step, start, target, tool, selected, onAddNode, onMoveNode, onNodeClick, onRemoveNode, onWeight }: CanvasProps) {
+export function GraphCanvas({ graph, highlightedEdges, step, start, target, tool, selected, onAddNode, onMoveNode, onNodeClick, onRemoveNode, onWeight }: CanvasProps) {
   const markers = useId()
   const grid = useId()
   const svg = useRef<SVGSVGElement>(null)
@@ -162,7 +163,7 @@ export function GraphCanvas({ graph, step, start, target, tool, selected, onAddN
           const geometry = edgeGeometry(source, targetNode, offset, edge.source === edge.target)
           const status = pathEdges.has(edge.id) ? 'path' : step?.activeEdge === edge.id ? 'active' : 'unvisited'
           return <g key={edge.id}>
-            <path className={`graph-edge state-${status}`} data-edge={edge.id} d={geometry.line}
+            <path className={`graph-edge state-${status}${highlightedEdges.includes(edge.id) ? ' matrix-highlight' : ''}`} data-edge={edge.id} d={geometry.line}
               markerEnd={graph.isDirected ? `url(#${markers}-${status})` : undefined} />
             {graph.isWeighted && <foreignObject x={geometry.label.x - 23} y={geometry.label.y - 12} width="46" height="24">
               <WeightInput label={`Weight ${source.label} to ${targetNode.label}`} weight={edge.weight} onCommit={(weight) => onWeight(edge.id, weight)} />
