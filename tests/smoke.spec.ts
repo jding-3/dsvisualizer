@@ -16,8 +16,7 @@ test('reverses a weighted edge in the matrix and opens its snapshot in a fresh b
   const weight = page.getByRole('textbox', { name: 'Weight A to B' })
   await weight.fill('2.5')
   await weight.press('Enter')
-  await page.getByRole('button', { name: 'Adjacency matrix' }).click()
-  const matrix = page.getByRole('dialog', { name: 'Adjacency matrix' })
+  const matrix = page.getByRole('region', { name: 'Adjacency matrix' })
   const forward = matrix.getByRole('button', { name: 'A to B', exact: true })
   const reverse = matrix.getByRole('button', { name: 'B to A', exact: true })
   await expect(forward).toHaveText('2.5')
@@ -26,7 +25,6 @@ test('reverses a weighted edge in the matrix and opens its snapshot in a fresh b
   await expect(forward).toHaveAccessibleDescription('No edge')
   await expect(reverse).toHaveText('2.5')
   await expect(reverse).toBeFocused()
-  await matrix.getByRole('button', { name: 'Done' }).click()
   await expect(page.getByRole('textbox', { name: 'Weight B to A' })).toHaveValue('2.5')
   await page.getByRole('slider', { name: 'Playback position' }).press('End')
   await expect(page.locator('button[aria-current=step]')).toContainText('no path from A to B')
@@ -52,8 +50,7 @@ test('reverses a weighted edge in the matrix and opens its snapshot in a fresh b
 
 test('adds and removes mirrored and reciprocal edges with the matrix', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Adjacency matrix' }).click()
-  const matrix = page.getByRole('dialog', { name: 'Adjacency matrix' })
+  const matrix = page.getByRole('region', { name: 'Adjacency matrix' })
   const forward = matrix.getByRole('button', { name: 'A to B', exact: true })
   const reverse = matrix.getByRole('button', { name: 'B to A', exact: true })
   await expect(forward).toHaveText('1')
@@ -67,9 +64,7 @@ test('adds and removes mirrored and reciprocal edges with the matrix', async ({ 
   await expect(reverse).toHaveText('0')
   await matrix.getByRole('button', { name: 'Add edge' }).click()
   await expect(forward).toHaveText('1')
-  await matrix.getByRole('button', { name: 'Done' }).click()
   await page.getByRole('switch', { name: 'Directed graph' }).click()
-  await page.getByRole('button', { name: 'Adjacency matrix' }).click()
   await expect(reverse).toHaveText('1')
   await forward.click()
   await matrix.getByRole('button', { name: 'Add edge' }).click()
@@ -95,6 +90,7 @@ test('drags nodes and plays, reverses, and resets both traversals', async ({ pag
   await expect(page.locator('button[aria-current=step]')).toContainText('Add start node A to the queue')
   await page.getByRole('button', { name: 'DFS Depth-first' }).click()
   await expect(page.getByRole('heading', { name: 'Stack', exact: true })).toBeVisible()
+  await expect(page.getByRole('table', { name: 'Graph connections' })).toBeInViewport()
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   await expect(page.locator('button[aria-current=step]')).toContainText('Visit node A')
   await page.getByRole('button', { name: 'Pause', exact: true }).click()
@@ -104,3 +100,28 @@ test('drags nodes and plays, reverses, and resets both traversals', async ({ pag
   await page.getByRole('button', { name: 'Reset playback' }).click()
   await expect(page.locator('button[aria-current=step]')).toContainText('Push start node A onto the stack')
 })
+
+for (const [width, height] of [[1280, 720], [320, 568]]) {
+  test(`keeps the sample graph, editable matrix, and playback on screen at ${width}×${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height })
+    await page.goto('/')
+    const graph = page.getByRole('group', { name: 'Interactive graph canvas' })
+    const matrix = page.getByRole('table', { name: 'Graph connections' })
+    const playback = page.getByRole('button', { name: 'Play', exact: true })
+    const timeline = page.getByRole('slider', { name: 'Playback position' })
+    const lastCell = matrix.getByRole('button', { name: 'G to G', exact: true })
+
+    for (const name of ['BFS Breadth-first', 'DFS Depth-first']) {
+      await page.getByRole('button', { name, exact: true }).click()
+      await timeline.press('End')
+      await expect(graph).toBeInViewport({ ratio: 1 })
+      await expect(lastCell).toBeInViewport({ ratio: 1 })
+      await expect(playback).toBeInViewport({ ratio: 1 })
+      const graphBounds = (await graph.boundingBox())!
+      expect(graphBounds.height).toBeGreaterThanOrEqual(110)
+      expect((await matrix.boundingBox())!.y).toBeGreaterThan(graphBounds.y + graphBounds.height)
+      expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(height)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+    }
+  })
+}

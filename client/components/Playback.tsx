@@ -8,7 +8,8 @@ export function Playback({ playback, length }: { playback: ReturnType<typeof use
   const rulerStyle = { '--tick-interval': `${100 / Math.min(Math.max(last, 1), 30)}%`, '--elapsed': `${last ? 100 * index / last : 0}%` } as CSSProperties
   return <section className="playback" aria-label="Playback controls">
     <div className="timeline">
-      <span>{length ? `Step ${index + 1} of ${length}` : 'No steps'}</span>
+      <span className="timeline-label">{length ? `Step ${index + 1} of ${length}` : 'No steps'}</span>
+      <span className="timeline-label-compact" aria-hidden="true">{length ? `${index + 1} / ${length}` : 'No steps'}</span>
       <div className="timeline-track" style={rulerStyle}>
         <input type="range" min={0} max={last || 1} value={index} aria-label="Playback position" aria-valuetext={length ? `Step ${index + 1} of ${length}` : 'No steps'}
           disabled={last === 0} onChange={(event) => seek(Number(event.target.value))} />

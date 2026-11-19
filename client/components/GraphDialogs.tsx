@@ -4,10 +4,10 @@ import { ArrowUpRight, Check, Copy, FolderOpen, Link2, X } from 'lucide-react'
 import type { GraphSummary } from '../../shared/graph'
 import { listGraphs } from '../api'
 
-export function Modal({ title, icon, onClose, children, className = '' }: { title: string; icon: ReactNode; onClose: () => void; children: ReactNode; className?: string }) {
+function Modal({ title, icon, onClose, children }: { title: string; icon: ReactNode; onClose: () => void; children: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => { dialog.current?.showModal() }, [])
-  return <dialog className={`modal ${className}`} ref={dialog} aria-labelledby="dialog-title"
+  return <dialog className="modal" ref={dialog} aria-labelledby="dialog-title"
     onCancel={(event) => { event.preventDefault(); onClose() }}
     onClick={(event) => { if (event.target === event.currentTarget) onClose() }}>
     <div className="modal-content">

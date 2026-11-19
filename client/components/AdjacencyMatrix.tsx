@@ -1,29 +1,30 @@
 import { useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import { ArrowRightLeft, Grid3X3, Plus, Trash2 } from 'lucide-react'
+import { ArrowRightLeft, Plus, Trash2 } from 'lucide-react'
 import { MAX_EDGES } from '../../shared/graph'
 import type { Graph, GraphEdge } from '../../shared/graph'
 import { edgeKey } from '../edgeKey'
-import { Modal } from './GraphDialogs'
 
 interface MatrixProps {
   graph: Graph
   onAdd: (source: string, target: string) => void
   onRemove: (id: string) => void
   onReverse: (id: string) => void
-  onClose: () => void
 }
 
 const arrowOffsets: Record<string, [number, number] | undefined> = {
   ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1],
 }
 
-export function AdjacencyMatrix({ graph, onAdd, onRemove, onReverse, onClose }: MatrixProps) {
+export function AdjacencyMatrix({ graph, onAdd, onRemove, onReverse }: MatrixProps) {
   const { nodes, edges, isDirected, isWeighted } = graph
-  const [cell, setCell] = useState(() => ({
+  const [selection, setSelection] = useState<{ source: string; target: string } | null>(null)
+  const row = nodes.findIndex(({ id }) => id === selection?.source)
+  const column = nodes.findIndex(({ id }) => id === selection?.target)
+  const cell = row >= 0 && column >= 0 ? { row, column } : {
     row: Math.max(0, nodes.findIndex(({ id }) => id === edges[0]?.source)),
-    column: edges.length ? Math.max(0, nodes.findIndex(({ id }) => id === edges[0].target)) : Math.min(1, nodes.length - 1),
-  }))
+    column: edges.length ? nodes.findIndex(({ id }) => id === edges[0].target) : Math.min(1, nodes.length - 1),
+  }
   const body = useRef<HTMLTableSectionElement>(null)
   const connections = new Map<string, GraphEdge[]>()
   const between = (source: string, target: string) => connections.get(edgeKey(source, target, isDirected)) ?? []
@@ -52,9 +53,12 @@ export function AdjacencyMatrix({ graph, onAdd, onRemove, onReverse, onClose }: 
     focusCell(row + offset[0], column + offset[1])
   }
 
-  return <Modal title="Adjacency matrix" icon={<Grid3X3 size={19} />} onClose={onClose} className="matrix-modal">
-    {nodes.length === 0 ? <p className="dialog-empty">Add a node to start editing edges.</p> : <>
-      <p>{isDirected ? 'Rows are sources and columns are targets. Select a cell to edit its edge.' : 'An undirected edge appears in both mirrored cells. Select either cell to edit it.'}</p>
+  return <section className="matrix-panel" aria-labelledby="matrix-heading">
+    <header className="matrix-heading">
+      <h2 id="matrix-heading">Adjacency matrix</h2>
+      {nodes.length > 0 && <span>{isDirected ? 'Rows → columns' : 'Mirrored edges'}</span>}
+    </header>
+    {nodes.length === 0 ? <p className="matrix-empty">Add a node to start editing edges.</p> : <>
       <div className="matrix-scroll">
         <table className="edge-matrix" aria-label="Graph connections">
           <thead><tr><th scope="col">{isDirected ? 'From / to' : 'Node'}</th>{nodes.map((node, index) => (
@@ -71,7 +75,8 @@ export function AdjacencyMatrix({ graph, onAdd, onRemove, onReverse, onClose }: 
               return <td key={to.id}>
                 <button type="button" className={count ? 'matrix-cell has-edge' : 'matrix-cell'} aria-pressed={active}
                   aria-label={`${from.label} to ${to.label}`} aria-description={detail} title={detail} tabIndex={active ? 0 : -1}
-                  onFocus={() => setCell({ row, column })} onClick={() => setCell({ row, column })}
+                  onFocus={() => setSelection({ source: from.id, target: to.id })}
+                  onClick={() => setSelection({ source: from.id, target: to.id })}
                   onKeyDown={(event) => moveFocus(event, row, column)}><span>{value}</span></button>
               </td>
             })}
@@ -79,31 +84,30 @@ export function AdjacencyMatrix({ graph, onAdd, onRemove, onReverse, onClose }: 
         </table>
       </div>
       {source && target && <section className="matrix-edit" aria-label="Selected connection">
-        <h3>{source.label} {isDirected ? '→' : '–'} {target.label}</h3>
+        <h3 title={`${source.label} ${isDirected ? '→' : '–'} ${target.label}`}>{source.label} {isDirected ? '→' : '–'} {target.label}</h3>
         {selected.length ? <>
           <ul className="matrix-edges">{selected.map((edge, index) => <li key={edge.id}>
-            <span>{isWeighted ? `Weight ${edge.weight}` : selected.length > 1 ? `Edge ${index + 1}` : 'Edge exists'}</span>
+            {selected.length > 1 && <span>{isWeighted ? `Weight ${edge.weight}` : `Edge ${index + 1}`}</span>}
             <div className="matrix-actions">
-              {reversible && <button type="button" className="button" disabled={hasOppositeEdge} onClick={() => {
+              {reversible && <button type="button" className="button" aria-label="Reverse edge" disabled={hasOppositeEdge} onClick={() => {
                 onReverse(edge.id)
                 focusCell(cell.column, cell.row)
-              }}><ArrowRightLeft size={15} /> Reverse edge</button>}
-              <button type="button" className="button clear-button" onClick={() => {
+              }}><ArrowRightLeft size={13} /> Reverse</button>}
+              <button type="button" className="button clear-button" aria-label="Remove edge" onClick={() => {
                 onRemove(edge.id)
                 focusCell(cell.row, cell.column)
-              }}><Trash2 size={15} /> Remove edge</button>
+              }}><Trash2 size={13} /> Remove</button>
             </div>
           </li>)}</ul>
           {hasOppositeEdge && <p>Remove the opposite edge before reversing this one.</p>}
         </> : <div className="matrix-add">
-          <p>{atEdgeLimit ? `This graph has reached the ${MAX_EDGES}-edge limit.` : 'No edge here.'}</p>
+          {atEdgeLimit && <p>This graph has reached the {MAX_EDGES}-edge limit.</p>}
           <button type="button" className="button" disabled={atEdgeLimit} onClick={() => {
             onAdd(source.id, target.id)
             focusCell(cell.row, cell.column)
-          }}><Plus size={16} /> Add edge</button>
+          }}><Plus size={13} /> Add edge</button>
         </div>}
       </section>}
     </>}
-    <footer className="matrix-footer"><button type="button" className="button primary" onClick={onClose}>Done</button></footer>
-  </Modal>
+  </section>
 }

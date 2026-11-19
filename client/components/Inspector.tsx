@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
 import { ArrowRight, Route } from 'lucide-react'
 import type { Algorithm, Step } from '../algorithms/traversal'
 import type { Graph } from '../../shared/graph'
@@ -14,9 +15,10 @@ interface InspectorProps {
   steps: Step[]
   index: number
   seek: (step: number) => void
+  playback: ReactNode
 }
 
-export function Inspector({ graph, algorithm, start, target, setAlgorithm, setStart, setTarget, steps, index, seek }: InspectorProps) {
+export function Inspector({ graph, algorithm, start, target, setAlgorithm, setStart, setTarget, steps, index, seek, playback }: InspectorProps) {
   const log = useRef<HTMLOListElement>(null)
   const current = useRef<HTMLLIElement>(null)
   const step = steps[index]
@@ -36,23 +38,24 @@ export function Inspector({ graph, algorithm, start, target, setAlgorithm, setSt
 
   return <aside className="inspector" aria-label="Algorithm inspector">
     <section className="inspector-section algorithm-section">
-      <h2>Traversal</h2>
+      <h2 className="traversal-heading">Traversal</h2>
       <div className="algorithm-picker" role="group" aria-label="Algorithm">
-        <button aria-pressed={!stack} onClick={() => setAlgorithm('bfs')}><b>BFS</b><span>Breadth-first</span></button>
-        <button aria-pressed={stack} onClick={() => setAlgorithm('dfs')}><b>DFS</b><span>Depth-first</span></button>
+        <button aria-pressed={!stack} aria-label="BFS Breadth-first" onClick={() => setAlgorithm('bfs')}><b>BFS</b><span>Breadth-first</span></button>
+        <button aria-pressed={stack} aria-label="DFS Depth-first" onClick={() => setAlgorithm('dfs')}><b>DFS</b><span>Depth-first</span></button>
       </div>
       <div className="endpoints">
-        <label>Start node<select aria-label="Start node" value={start} disabled={!graph.nodes.length} onChange={(event) => setStart(event.target.value)}>
+        <label>Start<select aria-label="Start node" value={start} disabled={!graph.nodes.length} onChange={(event) => setStart(event.target.value)}>
           {!graph.nodes.length && <option value="">Select a node</option>}
           {graph.nodes.map((node) => <option key={node.id} value={node.id}>{node.label}</option>)}
         </select></label>
-        <label>Target node<select aria-label="Target node" value={target} disabled={!graph.nodes.length} onChange={(event) => setTarget(event.target.value)}>
+        <label>Target<select aria-label="Target node" value={target} disabled={!graph.nodes.length} onChange={(event) => setTarget(event.target.value)}>
           {!graph.nodes.length && <option value="">Select a node</option>}
           {graph.nodes.map((node) => <option key={node.id} value={node.id}>{node.label}</option>)}
         </select></label>
       </div>
       {graph.isWeighted && <p className="weight-note">BFS and DFS use edge connections only.</p>}
     </section>
+    {playback}
     <section className="inspector-section frontier-section">
       <div className="section-heading"><h3>{stack ? 'Stack' : 'Queue'}</h3><span>{stack ? 'Top first' : 'Front first'}</span></div>
       <div className="frontier-list" aria-label={stack ? 'Current stack, top first' : 'Current queue, front first'}>

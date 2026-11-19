@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FolderOpen, Grid3X3, Link2, MousePointer2, Pencil, RotateCcw, Share2, Trash2 } from 'lucide-react'
+import { FolderOpen, Link2, MousePointer2, Pencil, RotateCcw, Share2, Trash2 } from 'lucide-react'
 import { MAX_TITLE_LENGTH } from '../shared/graph'
 import { traverse } from './algorithms/traversal'
 import type { Algorithm } from './algorithms/traversal'
@@ -84,8 +84,8 @@ export function App() {
           <Pencil size={16} aria-hidden="true" />
         </h1>
         <div className="workspace-actions">
-          <button className="button subdued" disabled={loading} onClick={() => { editor.loadSample(); setMessage(''); setLoadError('') }}><RotateCcw size={15} /> Load sample graph</button>
-          <button className="button subdued clear-button" disabled={loading || !graph.nodes.length} onClick={() => { editor.clear(); setMessage('') }}><Trash2 size={15} /> Clear graph</button>
+          <button className="button subdued" aria-label="Load sample graph" title="Load sample graph" disabled={loading} onClick={() => { editor.loadSample(); setMessage(''); setLoadError('') }}><RotateCcw size={15} /><span>Load sample graph</span></button>
+          <button className="button subdued clear-button" aria-label="Clear graph" title="Clear graph" disabled={loading || !graph.nodes.length} onClick={() => { editor.clear(); setMessage('') }}><Trash2 size={15} /><span>Clear graph</span></button>
         </div>
       </div>
       {loading && <p className="feedback" role="status">Loading saved graph…</p>}
@@ -108,40 +108,35 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
   editor: ReturnType<typeof useGraphEditor>; algorithm: Algorithm; revision: number; loading: boolean; onAlgorithm: (algorithm: Algorithm) => void
 }) {
   const { graph, start, target, tool, selected } = editor
-  const [matrixOpen, setMatrixOpen] = useState(false)
   const steps = useMemo(() => traverse(graph, algorithm, start, target), [graph, algorithm, start, target])
   const playback = usePlayback(steps.length, revision)
   const toolHint = tool === 'node' ? 'Click to add a node. Drag to move it.'
     : selected ? 'Select the destination node.' : 'Select two nodes to connect them.'
-  const graphSize = `${graph.nodes.length} ${graph.nodes.length === 1 ? 'node' : 'nodes'}, ${graph.edges.length} ${graph.edges.length === 1 ? 'edge' : 'edges'}`
 
   return <div className="workspace-grid">
     <section className="graph-panel" aria-label="Graph editor">
       <header className="canvas-toolbar">
         <div className="canvas-controls">
           <div className="tool-picker" role="group" aria-label="Canvas tool">
-            <button disabled={loading} aria-pressed={tool === 'node'} onClick={() => editor.setTool('node')}><MousePointer2 size={15} /> Edit nodes</button>
-            <button disabled={loading} aria-pressed={tool === 'edge'} onClick={() => editor.setTool('edge')}><Link2 size={15} /> Connect</button>
+            <button disabled={loading} aria-label="Edit nodes" aria-pressed={tool === 'node'} title="Click to add a node. Drag to move it." onClick={() => editor.setTool('node')}><MousePointer2 size={15} /><span>Edit nodes</span></button>
+            <button disabled={loading} aria-label="Connect" aria-pressed={tool === 'edge'} title="Select two nodes to connect them" onClick={() => editor.setTool('edge')}><Link2 size={15} /><span>Connect</span></button>
           </div>
           {selected && tool === 'node' && <button className="icon-button delete-node" aria-label="Delete selected node" title="Delete selected node" onClick={() => editor.removeNode(selected)}><Trash2 size={15} /></button>}
         </div>
         <div className="graph-options">
           <button type="button" role="switch" aria-label="Directed graph" aria-checked={graph.isDirected} disabled={loading} onClick={editor.toggleDirected}>Directed <span className="switch" /></button>
           <button type="button" role="switch" aria-label="Weighted graph" aria-checked={graph.isWeighted} disabled={loading} onClick={editor.toggleWeighted}>Weighted <span className="switch" /></button>
-          <button type="button" className="matrix-trigger" aria-label="Adjacency matrix" aria-haspopup="dialog" disabled={loading} onClick={() => setMatrixOpen(true)}><Grid3X3 size={15} /> Matrix</button>
         </div>
       </header>
       <div className={`plot${loading ? ' canvas-loading' : ''}`} inert={loading || undefined}>
         <GraphCanvas graph={graph} step={steps[playback.index]} start={start} target={target} tool={tool} selected={selected}
           onAddNode={editor.addNode} onMoveNode={editor.moveNode} onNodeClick={editor.clickNode} onRemoveNode={editor.removeNode} onWeight={editor.setWeight} />
       </div>
-      <footer className="canvas-footer"><span>{toolHint}</span><span>{graphSize}</span></footer>
-      <GraphLegend />
+      <footer className="canvas-footer"><GraphLegend /><span className="canvas-hint">{toolHint}</span></footer>
     </section>
-    <Playback playback={playback} length={steps.length} />
+    <AdjacencyMatrix graph={graph} onAdd={editor.addEdge} onRemove={editor.removeEdge} onReverse={editor.reverseEdge} />
     <Inspector graph={graph} algorithm={algorithm} start={start} target={target} setAlgorithm={onAlgorithm}
-      setStart={editor.setStart} setTarget={editor.setTarget} steps={steps} index={playback.index} seek={playback.seek} />
-    {matrixOpen && <AdjacencyMatrix graph={graph} onAdd={editor.addEdge} onRemove={editor.removeEdge}
-      onReverse={editor.reverseEdge} onClose={() => setMatrixOpen(false)} />}
+      setStart={editor.setStart} setTarget={editor.setTarget} steps={steps} index={playback.index} seek={playback.seek}
+      playback={<Playback playback={playback} length={steps.length} />} />
   </div>
 }
