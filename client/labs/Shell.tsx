@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { Playback } from '../components/Playback'
+import { LearningResources } from './LearningResources'
 
 const sections = [
   { name: 'Graphs', path: '/graphs', description: 'Build and share graphs, or edit edges in the adjacency matrix. Choose a start and target to trace breadth-first or depth-first search.' },
@@ -41,6 +42,7 @@ export function Home() {
         <ChevronRight className="lab-option-arrow" size={18} aria-hidden="true" />
       </a>
     })}</div>
+    <LearningResources />
   </main></div>
 }
 

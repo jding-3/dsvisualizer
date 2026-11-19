@@ -48,3 +48,7 @@ The browser suite uses Playwright Chromium. Install it with `npx playwright inst
 | `GET /graph/:id` | Open the snapshot in the editor. |
 
 Each save creates a new public snapshot. Editing a loaded graph and saving it gives you a different link, so an existing share URL stays stable. The MVP caps a graph at 60 nodes and 150 edges to keep the editor and snapshot playback responsive. Playback runs locally and opens with the first and last graph nodes selected by default. An authenticated private library would add ownership and listing rules at the API boundary. A weighted shortest-path algorithm would give edge weights a role in playback.
+
+## Learning resources
+
+The optional homepage panel links each workspace to a Wikipedia reference, an MIT OpenCourseWare video on YouTube, and a Python example on GitHub. It reads the checked-in manifest and makes no provider calls for visitors.

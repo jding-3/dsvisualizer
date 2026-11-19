@@ -68,3 +68,15 @@ test('keeps lab navigation and content within a small phone width', async ({ pag
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
   }
 })
+
+test('offers curated learning links in a collapsed homepage panel', async ({ page }) => {
+  await page.goto('/')
+  const panel = page.locator('.learning-resources')
+  const links = panel.getByRole('link')
+  await expect(links).toHaveCount(0)
+  await page.getByText('Learn more', { exact: true }).click()
+  await expect(links).toHaveCount(12)
+  for (const host of ['en.wikipedia.org', 'www.youtube.com', 'github.com']) {
+    await expect(panel.locator(`a[href^="https://${host}/"]`)).toHaveCount(4)
+  }
+})

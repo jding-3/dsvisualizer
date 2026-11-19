@@ -86,3 +86,16 @@
 @media (prefers-reduced-motion: reduce) {
   .lab-site *, .lab-site *::before, .lab-site *::after { animation: none; transition: none; }
 }
+
+.learning-resources { margin-top: 1rem; border: 1px solid #cdd7ed; border-radius: .75rem; background: #fff; }
+.learning-resources summary { display: flex; align-items: center; gap: .55rem; padding: .75rem .85rem; cursor: pointer; font-weight: 650; list-style: none; }
+.learning-resources summary::-webkit-details-marker { display: none; }
+.learning-resources summary svg:last-child { margin-left: auto; }
+.learning-resources[open] summary svg:last-child { transform: rotate(180deg); }
+.learning-topics { border-top: 1px solid #d8dfee; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: .85rem; padding: .8rem; }
+.learning-topics h2 { font-size: .95rem; padding: 0 .35rem; }
+.learning-topics ul { list-style: none; margin: .25rem 0 0; padding: 0; }
+.learning-topics a { display: flex; gap: .4rem; align-items: start; border-radius: .4rem; padding: .45rem .35rem; font-size: .85rem; }
+.learning-topics a:hover, .learning-resources summary:hover { background: #edf1ff; }
+.learning-topics a svg { margin-top: .15rem; }
+.learning-topics small { display: block; color: #425173; }
