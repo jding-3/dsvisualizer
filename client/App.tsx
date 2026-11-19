@@ -69,7 +69,7 @@ export function App() {
   return <>
     <header className="topbar">
       <div className="topbar-inner">
-        <a className="brand" href="/" aria-label="DSexplore home"><img src="/graphlab.svg" alt="" width="34" height="34" /> DSexplore</a>
+        <a className="brand" href="/" aria-label="DSvisualizer home"><img src="/graphlab.svg" alt="" width="34" height="34" /> DSvisualizer</a>
         <div className="header-actions">
           <button className="button" onClick={() => setSavedOpen(true)}><FolderOpen size={17} /><span>Saved graphs</span></button>
           <button className="button primary" onClick={shareGraph} disabled={saving || loading || !graph.nodes.length}><Share2 size={16} /><span>{saving ? 'Saving…' : 'Save & share'}</span></button>

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 test('reverses a weighted edge in the matrix and opens its snapshot in a fresh browser', async ({ page, browser, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await page.goto('/graphs')
-  await expect(page).toHaveTitle(/DSexplore/)
+  await expect(page).toHaveTitle(/DSvisualizer/)
   await page.getByRole('button', { name: 'Clear graph' }).click()
   const canvas = page.getByRole('group', { name: 'Interactive graph canvas' })
   await canvas.click({ position: { x: 200, y: 140 } })

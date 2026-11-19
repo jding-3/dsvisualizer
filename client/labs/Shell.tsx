@@ -11,7 +11,7 @@ const sections = [
 
 function Navigation() {
   return <header className="lab-nav"><div className="lab-nav-inner">
-    <a className="brand" href="/" aria-label="DSexplore homepage"><img src="/graphlab.svg" alt="" width="32" height="32" /> DSexplore</a>
+    <a className="brand" href="/" aria-label="DSvisualizer homepage"><img src="/graphlab.svg" alt="" width="32" height="32" /> DSvisualizer</a>
   </div></header>
 }
 
@@ -26,8 +26,8 @@ function Diagram({ name }: { name: string }) {
 
 export function Home() {
   return <div className="lab-site"><Navigation /><main className="lab-home">
-    <section className="lab-about" id="about" aria-label="About DSexplore">
-      <h1>DSexplore</h1>
+    <section className="lab-about" id="about" aria-label="About DSvisualizer">
+      <h1>DSvisualizer</h1>
       <p>Learn data structures by building them. Choose a workspace, try the sample or enter your own data, then play or step through an algorithm to see each decision.</p>
     </section>
     <div className="lab-options">{sections.map(({ name, path, description }) => {

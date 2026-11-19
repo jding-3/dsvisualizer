@@ -11,7 +11,7 @@ run_worker_first = ["/api/*", "/graph/*", "/graphs", "/trees", "/arrays", "/hash
 
 [vars]
 DEEPSPACE_APP_ID = "app_01M7TKVJM4P9GSJ26HFCDE57FV"
-APP_NAME = "DSexplore"
+APP_NAME = "DSvisualizer"
 
 [[migrations]]
 tag = "v1"

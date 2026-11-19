@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test'
 
 test('opens the home choices and supports direct routes and refresh', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveTitle(/DSexplore/)
-  const about = page.getByRole('region', { name: 'About DSexplore' })
-  await expect(about.getByRole('heading', { name: 'DSexplore', exact: true })).toBeVisible()
+  await expect(page).toHaveTitle(/DSvisualizer/)
+  const about = page.getByRole('region', { name: 'About DSvisualizer' })
+  await expect(about.getByRole('heading', { name: 'DSvisualizer', exact: true })).toBeVisible()
   await expect(page.getByRole('banner').getByRole('link')).toHaveCount(1)
   const firstCard = page.locator('main').getByRole('link', { name: 'Graphs', exact: true })
   expect((await about.boundingBox())!.y + (await about.boundingBox())!.height).toBeLessThan((await firstCard.boundingBox())!.y)
@@ -12,7 +12,7 @@ test('opens the home choices and supports direct routes and refresh', async ({ p
     await page.locator('main').getByRole('link', { name: label, exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`/${path}$`))
     expect((await page.reload())?.status()).toBe(200)
-    await page.getByRole('link', { name: /DSexplore home/ }).click()
+    await page.getByRole('link', { name: /DSvisualizer home/ }).click()
   }
 })
 
