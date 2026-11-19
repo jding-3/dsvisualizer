@@ -9,12 +9,9 @@ const sections = [
   { name: 'Arrays', path: '/arrays', icon: ListOrdered, description: 'Compare sorting strategies and trace binary search.' },
 ]
 
-function Navigation({ current }: { current?: string }) {
+function Navigation() {
   return <header className="lab-nav"><div className="lab-nav-inner">
     <a className="brand" href="/" aria-label="GraphLab homepage"><img src="/graphlab.svg" alt="" width="32" height="32" /> GraphLab</a>
-    <nav aria-label="Data structures">{sections.map(({ name, path }) => (
-      <a key={path} href={path} aria-current={current === path ? 'page' : undefined}>{name}</a>
-    ))}</nav>
   </div></header>
 }
 
@@ -38,17 +35,21 @@ export function Home() {
         <p>{description}</p>
       </a>
     ))}</div>
+    <section className="lab-about" id="about" aria-labelledby="about-heading">
+      <h2 id="about-heading">About GraphLab</h2>
+      <p>GraphLab is an interactive way to learn data structures. Build a graph, tree, hash table, or array and use playback to see how each algorithm works, one step at a time.</p>
+    </section>
   </main></div>
 }
 
 type LabShellProps = {
-  path: string; title: string; subtitle: string; controls: ReactNode; children: ReactNode; details?: ReactNode;
+  title: string; subtitle: string; controls: ReactNode; children: ReactNode; details?: ReactNode;
   description?: string; length: number; playback: Parameters<typeof Playback>[0]['playback']; pending: boolean;
   cancel: () => void; feedback?: string;
 }
 
-export function LabShell({ path, title, subtitle, controls, children, details, description, length, playback, pending, cancel, feedback }: LabShellProps) {
-  return <div className="lab-site"><Navigation current={path} /><main className="lab-page">
+export function LabShell({ title, subtitle, controls, children, details, description, length, playback, pending, cancel, feedback }: LabShellProps) {
+  return <div className="lab-site"><Navigation /><main className="lab-page">
     <h1>{title}</h1><p className="lab-subtitle">{subtitle}</p>
     <section className="lab-board" aria-label={title}>
       <div className="lab-controls">{controls}{feedback && <p className="lab-feedback" role="status">{feedback}</p>}</div>

@@ -30,7 +30,7 @@ export function TreeLab() {
     lab.start(treeTrace(lab.data, operation, value), operation !== 'search')
   }
 
-  return <LabShell {...lab} description={lab.step?.description} path="/trees" title="Binary search tree"
+  return <LabShell {...lab} description={lab.step?.description} title="Binary search tree"
     subtitle="Compare values to find the next branch." feedback={feedback}
     controls={<>
       <label>Value <input value={input} inputMode="decimal" placeholder="e.g. 7" onChange={(event) => { setInput(event.target.value); setFeedback('') }} /></label>

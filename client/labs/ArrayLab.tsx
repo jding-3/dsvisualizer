@@ -28,7 +28,7 @@ export function ArrayLab() {
     lab.start(arrayTrace(parsed, algorithm, target ?? 0), algorithm !== 'binary')
   }
 
-  return <LabShell {...lab} description={lab.step?.description} path="/arrays" title="Arrays"
+  return <LabShell {...lab} description={lab.step?.description} title="Arrays"
     subtitle="Sort values or search an ascending array."
     controls={<>
       <label className="array-input">Array values <input value={input} onChange={(event) => { lab.cancel(); setDraft(event.target.value) }} /></label>

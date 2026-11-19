@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test'
 test('opens the home choices and supports direct routes and refresh', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Explore data structures' })).toBeVisible()
+  await expect(page.getByRole('banner').getByRole('link')).toHaveCount(1)
+  await expect(page.getByRole('heading', { name: 'About GraphLab' })).toBeVisible()
   for (const [path, label] of [['graphs', 'Graphs'], ['trees', 'Trees'], ['hashing', 'Hashing'], ['arrays', 'Arrays']]) {
     await page.locator('main').getByRole('link', { name: new RegExp(label) }).click()
     await expect(page).toHaveURL(new RegExp(`/${path}$`))

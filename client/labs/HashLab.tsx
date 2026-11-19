@@ -28,7 +28,7 @@ export function HashLab() {
     setFeedback(`Rehashed ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}.`)
   }
 
-  return <LabShell {...lab} description={lab.step?.description} path="/hashing" title="Hash tables"
+  return <LabShell {...lab} description={lab.step?.description} title="Hash tables"
     subtitle="Find out where keys land and what happens when they collide." feedback={feedback}
     controls={<>
       <label>Buckets <select value={lab.data.size} onChange={(event) => rehash(Number(event.target.value), lab.data.mode)}>
