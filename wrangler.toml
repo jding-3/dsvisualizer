@@ -1,0 +1,28 @@
+name = "graph-visualizer"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat", "assets_navigation_has_no_effect"]
+main = "worker.ts"
+
+[assets]
+directory = "dist"
+binding = "ASSETS"
+not_found_handling = "none"
+run_worker_first = ["/api/*", "/graph/*", "/ws/*", "/internal/*", "/v1/*", "/_deepspace/*", "/llms.txt", "/llms-full.txt", "/.well-known/mcp", "/.well-known/mcp.json", "/.well-known/mcp/*"]
+
+[vars]
+DEEPSPACE_APP_ID = "app_01M7TKVJM4P9GSJ26HFCDE57FV"
+APP_NAME = "GraphLab"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["AppRecordRoom", "GraphStore"]
+
+[durable_objects]
+bindings = [
+  { name = "RECORD_ROOMS", class_name = "AppRecordRoom" },
+  { name = "GRAPH_STORE", class_name = "GraphStore" },
+]
+
+[dev]
+port = 8780
+inspector_port = 9237
