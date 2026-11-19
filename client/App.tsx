@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CircleDot, FolderOpen, GitFork, Link2, MousePointer2, Network, RotateCcw, Share2, Trash2, Waypoints } from 'lucide-react'
+import { FolderOpen, Link2, MousePointer2, Pencil, RotateCcw, Share2, Trash2 } from 'lucide-react'
 import { MAX_TITLE_LENGTH } from '../shared/graph'
 import { traverse } from './algorithms/traversal'
 import type { Algorithm } from './algorithms/traversal'
 import { getGraph, saveGraph } from './api'
-import { GraphCanvas } from './components/GraphCanvas'
+import { GraphCanvas, GraphLegend } from './components/GraphCanvas'
 import { SavedGraphs, ShareGraph } from './components/GraphDialogs'
 import { Inspector } from './components/Inspector'
 import { Playback } from './components/Playback'
@@ -67,22 +67,21 @@ export function App() {
   return <>
     <header className="topbar">
       <div className="topbar-inner">
-        <a className="brand" href="/" aria-label="GraphLab home"><span className="brand-icon"><Network size={21} strokeWidth={2.1} /></span><span>Graph<span>Lab</span></span></a>
-        <span className="brand-caption">Graph algorithm visualizer</span>
+        <a className="brand" href="/" aria-label="GraphLab home"><img src="/graphlab.svg" alt="" width="34" height="34" /> GraphLab</a>
         <div className="header-actions">
           <button className="button" onClick={() => setSavedOpen(true)}><FolderOpen size={17} /><span>Saved graphs</span></button>
-          <button className="button primary" onClick={shareGraph} disabled={saving || loading || !graph.nodes.length}><Share2 size={16} /><span>{saving ? 'Saving…' : 'Save & Share'}</span></button>
+          <button className="button primary" onClick={shareGraph} disabled={saving || loading || !graph.nodes.length}><Share2 size={16} /><span>{saving ? 'Saving…' : 'Save & share'}</span></button>
         </div>
       </div>
     </header>
     <main className="workspace">
       <div className="workspace-heading">
-        <div>
-          <div className="workspace-kicker"><Waypoints size={14} /> Graph workspace</div>
-          <h1><input className="title-input" aria-label="Graph title" maxLength={MAX_TITLE_LENGTH} value={graph.title} disabled={loading}
+        <h1 className="title-field">
+          <input className="title-input" aria-label="Graph title" maxLength={MAX_TITLE_LENGTH} value={graph.title} disabled={loading}
             placeholder="Untitled graph" onChange={(event) => editor.setTitle(event.target.value)}
-            onBlur={() => editor.setTitle(graph.title.trim() || 'Untitled graph')} /></h1>
-        </div>
+            onBlur={() => editor.setTitle(graph.title.trim() || 'Untitled graph')} />
+          <Pencil size={16} aria-hidden="true" />
+        </h1>
         <div className="workspace-actions">
           <button className="button subdued" disabled={loading} onClick={() => { editor.loadSample(); setMessage(''); setLoadError('') }}><RotateCcw size={15} /> Load sample graph</button>
           <button className="button subdued clear-button" disabled={loading || !graph.nodes.length} onClick={() => { editor.clear(); setMessage('') }}><Trash2 size={15} /> Clear graph</button>
@@ -110,35 +109,33 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
   const { graph, start, target, tool, selected } = editor
   const steps = useMemo(() => traverse(graph, algorithm, start, target), [graph, algorithm, start, target])
   const playback = usePlayback(steps.length, revision)
-  const toolHint = tool === 'node' ? 'Click to add · Drag to move'
-    : selected ? 'Select the destination node' : 'Select two nodes to connect them'
+  const toolHint = tool === 'node' ? 'Click to add a node. Drag to move it.'
+    : selected ? 'Select the destination node.' : 'Select two nodes to connect them.'
+  const graphSize = `${graph.nodes.length} ${graph.nodes.length === 1 ? 'node' : 'nodes'}, ${graph.edges.length} ${graph.edges.length === 1 ? 'edge' : 'edges'}`
 
   return <div className="workspace-grid">
-    <div className="work-area">
-      <section className="panel graph-panel" aria-label="Graph editor">
-        <header className="canvas-toolbar">
-          <div className="canvas-controls">
-            <div className="tool-picker" role="group" aria-label="Canvas tool">
-              <button disabled={loading} aria-pressed={tool === 'node'} onClick={() => editor.setTool('node')}><MousePointer2 size={15} /> Edit nodes</button>
-              <button disabled={loading} aria-pressed={tool === 'edge'} onClick={() => editor.setTool('edge')}><Link2 size={15} /> Connect</button>
-            </div>
-            {selected && tool === 'node' && <button className="icon-button delete-node" aria-label="Delete selected node" title="Delete selected node" onClick={() => editor.removeNode(selected)}><Trash2 size={15} /></button>}
+    <section className="graph-panel" aria-label="Graph editor">
+      <header className="canvas-toolbar">
+        <div className="canvas-controls">
+          <div className="tool-picker" role="group" aria-label="Canvas tool">
+            <button disabled={loading} aria-pressed={tool === 'node'} onClick={() => editor.setTool('node')}><MousePointer2 size={15} /> Edit nodes</button>
+            <button disabled={loading} aria-pressed={tool === 'edge'} onClick={() => editor.setTool('edge')}><Link2 size={15} /> Connect</button>
           </div>
-          <div className="graph-options">
-            <button type="button" role="switch" aria-label="Directed graph" aria-checked={graph.isDirected} disabled={loading} onClick={editor.toggleDirected}><GitFork size={15} /> Directed <span className="switch" /></button>
-            <button type="button" role="switch" aria-label="Weighted graph" aria-checked={graph.isWeighted} disabled={loading} onClick={editor.toggleWeighted}>Weighted <span className="switch" /></button>
-          </div>
-        </header>
-        <div className={loading ? 'canvas-loading' : undefined} inert={loading || undefined}>
-          <GraphCanvas graph={graph} step={steps[playback.index]} start={start} target={target} tool={tool} selected={selected}
-            onAddNode={editor.addNode} onMoveNode={editor.moveNode} onNodeClick={editor.clickNode} onRemoveNode={editor.removeNode} onWeight={editor.setWeight} />
+          {selected && tool === 'node' && <button className="icon-button delete-node" aria-label="Delete selected node" title="Delete selected node" onClick={() => editor.removeNode(selected)}><Trash2 size={15} /></button>}
         </div>
-        <footer className="canvas-footer"><span><CircleDot size={13} />{toolHint}</span>
-          <span>{graph.nodes.length} {graph.nodes.length === 1 ? 'node' : 'nodes'} <i /> {graph.edges.length} {graph.edges.length === 1 ? 'edge' : 'edges'}</span>
-        </footer>
-      </section>
-      <Playback playback={playback} length={steps.length} />
-    </div>
+        <div className="graph-options">
+          <button type="button" role="switch" aria-label="Directed graph" aria-checked={graph.isDirected} disabled={loading} onClick={editor.toggleDirected}>Directed <span className="switch" /></button>
+          <button type="button" role="switch" aria-label="Weighted graph" aria-checked={graph.isWeighted} disabled={loading} onClick={editor.toggleWeighted}>Weighted <span className="switch" /></button>
+        </div>
+      </header>
+      <div className={`plot${loading ? ' canvas-loading' : ''}`} inert={loading || undefined}>
+        <GraphCanvas graph={graph} step={steps[playback.index]} start={start} target={target} tool={tool} selected={selected}
+          onAddNode={editor.addNode} onMoveNode={editor.moveNode} onNodeClick={editor.clickNode} onRemoveNode={editor.removeNode} onWeight={editor.setWeight} />
+      </div>
+      <footer className="canvas-footer"><span>{toolHint}</span><span>{graphSize}</span></footer>
+      <GraphLegend />
+    </section>
+    <Playback playback={playback} length={steps.length} />
     <Inspector graph={graph} algorithm={algorithm} start={start} target={target} setAlgorithm={onAlgorithm}
       setStart={editor.setStart} setTarget={editor.setTarget} steps={steps} index={playback.index} seek={playback.seek} />
   </div>

@@ -37,9 +37,9 @@ export function SavedGraphs({ onClose }: { onClose: () => void }) {
     {error ? <div className="dialog-empty" role="alert">{error}
       <button className="button" onClick={() => { setError(''); setAttempt(attempt + 1) }}>Retry</button>
     </div> : graphs === null ? <div className="dialog-empty" role="status">Loading saved graphs…</div>
-      : graphs.length === 0 ? <div className="dialog-empty">No saved graphs yet.</div>
+      : graphs.length === 0 ? <div className="dialog-empty">Use Save &amp; share to add your first graph.</div>
       : <ul className="saved-list">{graphs.map((graph) => <li key={graph.id}>
-        <a href={`/graph/${graph.id}`}><span><strong>{graph.title}</strong><small>{graph.nodeCount} nodes · {graph.edgeCount} edges</small></span><ArrowUpRight size={17} /></a>
+        <a href={`/graph/${graph.id}`}><span><strong>{graph.title}</strong><small>{graph.nodeCount} nodes, {graph.edgeCount} edges</small></span></a>
       </li>)}</ul>}
   </Modal>
 }

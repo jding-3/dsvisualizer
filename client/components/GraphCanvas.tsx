@@ -1,6 +1,5 @@
 import { useId, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
-import { GitBranch, Plus } from 'lucide-react'
 import { GRAPH_HEIGHT, GRAPH_WIDTH } from '../../shared/graph'
 import type { Graph, GraphNode } from '../../shared/graph'
 import type { Step } from '../algorithms/traversal'
@@ -9,7 +8,17 @@ export type Tool = 'node' | 'edge'
 type Point = { x: number; y: number }
 const radius = 22
 const inset = 25
-const colors = { unvisited: '#5d7590', frontier: '#f3ba6b', active: '#54d5fe', visited: '#a59af8', path: '#56e0a1' }
+const states = {
+  unvisited: 'Unvisited', frontier: 'In frontier', active: 'Active', visited: 'Visited', path: 'Path',
+}
+const xTicks = [100, 200, 300, 400, 500, 600, 700]
+const yTicks = [100, 200, 300, 400]
+
+export function GraphLegend() {
+  return <ul className="legend" aria-label="Graph color legend">
+    {Object.entries(states).map(([status, label]) => <li key={status}><i className={`state-${status}`} />{label}</li>)}
+  </ul>
+}
 
 function moveToward(from: Point, to: Point, distance: number): Point {
   const length = Math.hypot(to.x - from.x, to.y - from.y) || 1
@@ -70,7 +79,6 @@ interface CanvasProps {
 }
 
 export function GraphCanvas({ graph, step, start, target, tool, selected, onAddNode, onMoveNode, onNodeClick, onRemoveNode, onWeight }: CanvasProps) {
-  const outlineId = useId()
   const markers = useId()
   const grid = useId()
   const svg = useRef<SVGSVGElement>(null)
@@ -123,19 +131,28 @@ export function GraphCanvas({ graph, step, start, target, tool, selected, onAddN
           onAddNode({ x: Math.max(inset, Math.min(GRAPH_WIDTH - inset, point.x)), y: Math.max(inset, Math.min(GRAPH_HEIGHT - inset, point.y)) })
         }}>
         <defs>
-          <pattern id={grid} width="24" height="24" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" fill="var(--grid)" />
+          <pattern id={grid} width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 H 0 V 20" fill="none" stroke="var(--grid)" strokeWidth="1" />
           </pattern>
-          <filter id={outlineId} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="6" />
-          </filter>
-          {Object.entries(colors).map(([status, color]) => (
+          {Object.keys(states).map((status) => (
             <marker key={status} id={`${markers}-${status}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
+              <path className={`graph-arrow state-${status}`} d="M 0 0 L 10 5 L 0 10 z" />
             </marker>
           ))}
         </defs>
         <rect width={GRAPH_WIDTH} height={GRAPH_HEIGHT} fill={`url(#${grid})`} pointerEvents="none" />
+        <g className="plot-ruler" aria-hidden="true">
+          {xTicks.map((x) => <g key={x} transform={`translate(${x},0)`}>
+            <path className="major-gridline" d={`M 0 0 V ${GRAPH_HEIGHT}`} />
+            <path className="ruler-notch" d="M 0 0 V 6" />
+            <text y="17" textAnchor="middle">{x}</text>
+          </g>)}
+          {yTicks.map((y) => <g key={y} transform={`translate(0,${y})`}>
+            <path className="major-gridline" d={`M 0 0 H ${GRAPH_WIDTH}`} />
+            <path className="ruler-notch" d="M 0 0 H 6" />
+            <text x="9" y="4">{y}</text>
+          </g>)}
+        </g>
         {graph.edges.map((edge) => {
           const source = nodes.get(edge.source)
           const targetNode = nodes.get(edge.target)
@@ -155,7 +172,7 @@ export function GraphCanvas({ graph, step, start, target, tool, selected, onAddN
         {graph.nodes.map((node) => {
           const status = pathNodes.has(node.id) ? 'path' : step?.activeNode === node.id ? 'active'
             : frontier.has(node.id) ? 'frontier' : visited.has(node.id) ? 'visited' : 'unvisited'
-          const marker = node.id === start && node.id === target ? 'START / TARGET' : node.id === start ? 'START' : node.id === target ? 'TARGET' : ''
+          const marker = node.id === start && node.id === target ? 'Start and target' : node.id === start ? 'Start' : node.id === target ? 'Target' : ''
           return <g key={node.id} transform={`translate(${node.x},${node.y})`} data-node={node.id}
             className={`graph-node state-${status}${node.id === selected ? ' is-selected' : ''}${node.id === dragging ? ' is-dragging' : ''}`}
             role="button" aria-label={`Node ${node.label}`} aria-pressed={node.id === selected} tabIndex={0}
@@ -179,19 +196,17 @@ export function GraphCanvas({ graph, step, start, target, tool, selected, onAddN
               if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onNodeClick(node.id) }
               if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); onRemoveNode(node.id) }
             }}>
-            {(status === 'active' || status === 'path') && <circle r={radius + 4} fill="none" stroke={colors[status]} opacity=".55" filter={`url(#${outlineId})`} />}
-            {(node.id === selected || marker) && <circle className="node-ring" r={radius + 5} />}
+            {(node.id === selected || marker || status === 'active') && <circle className="node-ring" r={radius + 5} />}
             <circle r={radius + 5} fill="transparent" />
             <circle className="node-disc" r={radius} />
             <text className="node-label" textAnchor="middle" dominantBaseline="central">{node.label.length > 5 ? `${node.label.slice(0, 4)}…` : node.label}</text>
-            {marker && <text className="node-marker" y={radius + 23} textAnchor="middle">{marker}</text>}
+            {marker && <text className="node-marker" y={node.y > GRAPH_HEIGHT - 54 ? -radius - 13 : radius + 21} textAnchor="middle">{marker}</text>}
           </g>
         })}
       </svg>
       {graph.nodes.length === 0 && <div className="canvas-empty">
-        <span className="empty-icon"><GitBranch size={24} /></span>
-        <strong>Your graph starts here</strong>
-        <span><Plus size={14} /> Click the canvas to add a node</span>
+        <strong>Add your first node</strong>
+        <span>Click anywhere on the grid to start.</span>
       </div>}
     </div>
   )

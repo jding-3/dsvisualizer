@@ -30,6 +30,8 @@
     "dev:local": "vite --host 127.0.0.1"
   },
   "dependencies": {
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "deepspace": "0.44.2",
     "hono": "^4.13.7",
     "lucide-react": "^0.460.0",
@@ -38,9 +40,9 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.50.0",
     "@cloudflare/vite-plugin": "^1.33.0",
     "@cloudflare/workers-types": "^5.20260708.1",
+    "@playwright/test": "^1.50.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.0",
@@ -48,9 +50,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.60.1",
-    "vitest": "^4.1.10",
     "vite": "^8.0.0",
     "vite-plugin-checker": "^0.14.1",
+    "vitest": "^4.1.10",
     "wrangler": "^4.79.0"
   },
   "private": true
