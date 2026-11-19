@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import type { ReactNode } from 'react'
 import { ArrowRight, Route } from 'lucide-react'
 import type { Algorithm, Step } from '../algorithms/traversal'
 import type { Graph } from '../../shared/graph'
@@ -15,10 +14,9 @@ interface InspectorProps {
   steps: Step[]
   index: number
   seek: (step: number) => void
-  playback: ReactNode
 }
 
-export function Inspector({ graph, algorithm, start, target, setAlgorithm, setStart, setTarget, steps, index, seek, playback }: InspectorProps) {
+export function Inspector({ graph, algorithm, start, target, setAlgorithm, setStart, setTarget, steps, index, seek }: InspectorProps) {
   const log = useRef<HTMLOListElement>(null)
   const current = useRef<HTMLLIElement>(null)
   const step = steps[index]
@@ -55,7 +53,6 @@ export function Inspector({ graph, algorithm, start, target, setAlgorithm, setSt
       </div>
       {graph.isWeighted && <p className="weight-note">BFS and DFS use edge connections only.</p>}
     </section>
-    {playback}
     <section className="inspector-section frontier-section">
       <div className="section-heading"><h3>{stack ? 'Stack' : 'Queue'}</h3><span>{stack ? 'Top first' : 'Front first'}</span></div>
       <div className="frontier-list" aria-label={stack ? 'Current stack, top first' : 'Current queue, front first'}>

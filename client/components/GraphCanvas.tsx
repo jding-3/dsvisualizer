@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 import { GRAPH_HEIGHT, GRAPH_WIDTH } from '../../shared/graph'
 import type { Graph, GraphNode } from '../../shared/graph'
@@ -86,7 +86,18 @@ export function GraphCanvas({ graph, highlightedEdges, step, start, target, tool
   const svg = useRef<SVGSVGElement>(null)
   const gesture = useRef<{ pointer: number; node: GraphNode; origin: Point; moved: boolean } | null>(null)
   const [dragging, setDragging] = useState<string | null>(null)
-  const nodes = new Map(graph.nodes.map((node) => [node.id, node]))
+  const [stretch, setStretch] = useState(1)
+  useEffect(() => {
+    if (!svg.current) return
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      if (height) setStretch(Math.max(1, width * GRAPH_HEIGHT / (height * GRAPH_WIDTH)))
+    })
+    observer.observe(svg.current)
+    return () => observer.disconnect()
+  }, [])
+  const plotWidth = GRAPH_WIDTH * stretch
+  const nodes = new Map(graph.nodes.map((node) => [node.id, { ...node, x: node.x * stretch }]))
   const visited = new Set(step?.visitedNodes)
   const frontier = new Set(step?.frontier)
   const pathNodes = new Set(step?.path?.nodes)
@@ -102,7 +113,8 @@ export function GraphCanvas({ graph, highlightedEdges, step, start, target, tool
   function graphPoint(event: { clientX: number; clientY: number }) {
     const matrix = svg.current?.getScreenCTM()
     if (!matrix) return null
-    return new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
+    return { x: point.x / stretch, y: point.y }
   }
 
   function move(event: PointerEvent<SVGGElement>) {
@@ -123,7 +135,7 @@ export function GraphCanvas({ graph, highlightedEdges, step, start, target, tool
 
   return (
     <div className={`canvas-shell ${tool === 'edge' ? 'connect-mode' : ''}`}>
-      <svg ref={svg} className="graph-canvas" viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}
+      <svg ref={svg} className="graph-canvas" viewBox={`0 0 ${plotWidth} ${GRAPH_HEIGHT}`}
         role="group" aria-label="Interactive graph canvas"
         onClick={(event) => {
           if (event.target !== event.currentTarget || tool !== 'node') return
@@ -141,15 +153,15 @@ export function GraphCanvas({ graph, highlightedEdges, step, start, target, tool
             </marker>
           ))}
         </defs>
-        <rect width={GRAPH_WIDTH} height={GRAPH_HEIGHT} fill={`url(#${grid})`} pointerEvents="none" />
+        <rect width={plotWidth} height={GRAPH_HEIGHT} fill={`url(#${grid})`} pointerEvents="none" />
         <g className="plot-ruler" aria-hidden="true">
-          {xTicks.map((x) => <g key={x} transform={`translate(${x},0)`}>
+          {xTicks.map((x) => <g key={x} transform={`translate(${x * stretch},0)`}>
             <path className="major-gridline" d={`M 0 0 V ${GRAPH_HEIGHT}`} />
             <path className="ruler-notch" d="M 0 0 V 6" />
             <text y="17" textAnchor="middle">{x}</text>
           </g>)}
           {yTicks.map((y) => <g key={y} transform={`translate(0,${y})`}>
-            <path className="major-gridline" d={`M 0 0 H ${GRAPH_WIDTH}`} />
+            <path className="major-gridline" d={`M 0 0 H ${plotWidth}`} />
             <path className="ruler-notch" d="M 0 0 H 6" />
             <text x="9" y="4">{y}</text>
           </g>)}
@@ -174,7 +186,7 @@ export function GraphCanvas({ graph, highlightedEdges, step, start, target, tool
           const status = pathNodes.has(node.id) ? 'path' : step?.activeNode === node.id ? 'active'
             : frontier.has(node.id) ? 'frontier' : visited.has(node.id) ? 'visited' : 'unvisited'
           const marker = node.id === start && node.id === target ? 'Start and target' : node.id === start ? 'Start' : node.id === target ? 'Target' : ''
-          return <g key={node.id} transform={`translate(${node.x},${node.y})`} data-node={node.id}
+          return <g key={node.id} transform={`translate(${node.x * stretch},${node.y})`} data-node={node.id}
             className={`graph-node state-${status}${node.id === selected ? ' is-selected' : ''}${node.id === dragging ? ' is-dragging' : ''}`}
             role="button" aria-label={`Node ${node.label}`} aria-pressed={node.id === selected} tabIndex={0}
             onPointerDown={(event) => {

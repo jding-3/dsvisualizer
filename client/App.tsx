@@ -139,9 +139,9 @@ function Workspace({ editor, algorithm, revision, loading, onAlgorithm }: {
       </div>
       <footer className="canvas-footer"><GraphLegend /><span className="canvas-hint">{toolHint}</span></footer>
     </section>
+    <Playback playback={playback} length={steps.length} />
     <AdjacencyMatrix graph={graph} onPreview={setPreview} onAdd={editor.addEdge} onRemove={editor.removeEdge} onReverse={editor.reverseEdge} />
     <Inspector graph={graph} algorithm={algorithm} start={start} target={target} setAlgorithm={onAlgorithm}
-      setStart={editor.setStart} setTarget={editor.setTarget} steps={steps} index={playback.index} seek={playback.seek}
-      playback={<Playback playback={playback} length={steps.length} />} />
+      setStart={editor.setStart} setTarget={editor.setTarget} steps={steps} index={playback.index} seek={playback.seek} />
   </div>
 }
