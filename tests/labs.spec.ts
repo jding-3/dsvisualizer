@@ -80,3 +80,56 @@ test('offers curated learning links in a collapsed homepage panel', async ({ pag
     await expect(panel.locator(`a[href^="https://${host}/"]`)).toHaveCount(4)
   }
 })
+
+test('stages the homepage intro and lets visitors pause and replay a visible demo', async ({ page }) => {
+  await page.setViewportSize({ width: 1152, height: 800 })
+  await page.clock.install()
+  await page.goto('/')
+  const about = page.getByRole('region', { name: 'About DSvisualizer' })
+  await expect(about.getByRole('heading')).toHaveCSS('animation-delay', '0s')
+  await expect(about.locator('p')).toHaveCSS('animation-delay', '0.44s')
+
+  const graphs = page.getByRole('region', { name: 'Graphs', exact: true })
+  const preview = await graphs.locator('figure').boundingBox()
+  const card = await graphs.getByRole('link', { name: 'Graphs', exact: true }).boundingBox()
+  expect(preview!.x + preview!.width).toBeLessThan(card!.x)
+  expect(preview!.height).toBeGreaterThan(300)
+
+  const arrays = page.getByRole('region', { name: 'Arrays', exact: true })
+  expect((await arrays.boundingBox())!.y).toBeGreaterThan(800)
+  await expect(arrays.locator('figcaption')).toContainText('Compare neighbors')
+
+  await graphs.getByRole('button', { name: /Pause/ }).click()
+  const pausedCaption = await graphs.locator('figcaption').textContent()
+  await page.clock.runFor(2000)
+  await expect(graphs.locator('figcaption')).toHaveText(pausedCaption!)
+  await graphs.getByRole('button', { name: /Play/ }).click()
+  await expect(graphs.locator('figcaption')).toContainText('Shortest path: A → B → D.', { timeout: 10_000 })
+  await graphs.getByRole('button', { name: /Replay/ }).click()
+  await expect(graphs.locator('figcaption')).toContainText('Start at A')
+})
+
+test('lets users step through homepage previews with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('animation-name', 'none')
+  const demos = [
+    ['Graphs', 'Shortest path: A → B → D.', 'Start at A'],
+    ['Trees', 'Found 6.', 'Find the value 6'],
+    ['Hashing', 'Insert “h” at bucket 0.', 'Insert h into a table'],
+    ['Arrays', 'The array is sorted in ascending order.', 'Compare neighbors'],
+  ]
+  for (const [name, result, start] of demos) {
+    const section = page.getByRole('region', { name, exact: true })
+    const control = section.getByRole('button')
+    const caption = section.locator('figcaption')
+    await expect(caption).toContainText(start)
+    for (let i = 0; i < 10 && await section.getByRole('button', { name: /^Next step/ }).isVisible(); i++) {
+      await control.click()
+    }
+    await expect(caption).toContainText(result)
+    await expect(control).toHaveAccessibleName(/^Reset/)
+    await control.click()
+    await expect(caption).toContainText(start)
+  }
+})
