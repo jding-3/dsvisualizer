@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('reverses a weighted edge in the matrix and opens its snapshot in a fresh browser', async ({ page, browser, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
-  await page.goto('/')
+  await page.goto('/graphs')
   await expect(page).toHaveTitle(/GraphLab/)
   await page.getByRole('button', { name: 'Clear graph' }).click()
   const canvas = page.getByRole('group', { name: 'Interactive graph canvas' })
@@ -49,7 +49,7 @@ test('reverses a weighted edge in the matrix and opens its snapshot in a fresh b
 })
 
 test('adds and removes mirrored and reciprocal edges with the matrix', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/graphs')
   const matrix = page.getByRole('region', { name: 'Adjacency matrix' })
   const forward = matrix.getByRole('button', { name: 'A to B', exact: true })
   const reverse = matrix.getByRole('button', { name: 'B to A', exact: true })
@@ -78,7 +78,7 @@ test('adds and removes mirrored and reciprocal edges with the matrix', async ({ 
 })
 
 test('drags nodes and plays, reverses, and resets both traversals', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/graphs')
   const node = page.getByRole('button', { name: 'Node C' })
   const before = await node.getAttribute('transform')
   const box = await node.boundingBox()
@@ -108,7 +108,7 @@ test('drags nodes and plays, reverses, and resets both traversals', async ({ pag
 for (const [width, height] of [[1280, 720], [320, 568]]) {
   test(`keeps the sample graph, editable matrix, and playback on screen at ${width}×${height}`, async ({ page }) => {
     await page.setViewportSize({ width, height })
-    await page.goto('/')
+    await page.goto('/graphs')
     const graph = page.getByRole('group', { name: 'Interactive graph canvas' })
     const matrix = page.getByRole('table', { name: 'Graph connections' })
     const playback = page.getByRole('button', { name: 'Play', exact: true })

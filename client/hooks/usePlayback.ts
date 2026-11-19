@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 
 type Run = { revision: number; index: number; running: boolean }
 
-export function usePlayback(length: number, revision: number) {
+export function usePlayback(length: number, revision: number, autoStart = false) {
   const [run, setRun] = useState<Run>({ revision, index: 0, running: false })
   const [speed, setSpeed] = useState(1)
   const last = Math.max(0, length - 1)
   const index = run.revision === revision ? Math.min(run.index, last) : 0
-  const playing = run.revision === revision && run.running && index < last
+  const playing = (run.revision === revision ? run.running : autoStart) && index < last
 
   useEffect(() => {
     if (!playing) return

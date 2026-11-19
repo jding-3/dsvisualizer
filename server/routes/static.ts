@@ -6,10 +6,9 @@ export function registerStaticRoutes(app: Hono<AppContext>) {
   // Unknown REST routes should always receive JSON, including non-GET requests.
   app.all('/api/*', (c) => c.json({ error: 'Not found' }, 404))
 
-  app.get('/graph/:id', (c) => {
-    const url = new URL('/', c.req.url)
-    return c.env.ASSETS.fetch(new Request(url, c.req.raw))
-  })
+  for (const path of ['/graphs', '/trees', '/arrays', '/hashing', '/graph/:id']) {
+    app.get(path, (c) => c.env.ASSETS.fetch(new Request(new URL('/', c.req.url), c.req.raw)))
+  }
 
   app.get('*', (c) => {
     if (isPlatformReservedPath(new URL(c.req.url).pathname)) return c.json({ error: 'Not found' }, 404)
