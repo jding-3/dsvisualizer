@@ -1,17 +1,17 @@
 import type { ReactNode } from 'react'
-import { ArrowUpRight, GitFork, Grid2X2, ListOrdered, Network } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { Playback } from '../components/Playback'
 
 const sections = [
-  { name: 'Graphs', path: '/graphs', icon: Network, description: 'Connect nodes and trace breadth-first and depth-first search.' },
-  { name: 'Trees', path: '/trees', icon: GitFork, description: 'Build a binary search tree and follow each branch.' },
-  { name: 'Hashing', path: '/hashing', icon: Grid2X2, description: 'Watch keys land in buckets and resolve collisions.' },
-  { name: 'Arrays', path: '/arrays', icon: ListOrdered, description: 'Compare sorting strategies and trace binary search.' },
+  { name: 'Graphs', path: '/graphs', description: 'Build and share graphs, or edit edges in the adjacency matrix. Choose a start and target to trace breadth-first or depth-first search.' },
+  { name: 'Trees', path: '/trees', description: 'Insert, search, or delete values in a binary search tree. Follow its branches or watch an in-order, pre-order, or post-order traversal.' },
+  { name: 'Hashing', path: '/hashing', description: 'Insert, find, or delete keys. Watch them land in buckets and resolve collisions with separate chaining or linear probing.' },
+  { name: 'Arrays', path: '/arrays', description: 'Enter or randomize values. Watch Bubble Sort swap neighbors, Merge Sort combine halves, or Binary Search narrow a sorted range.' },
 ]
 
 function Navigation() {
   return <header className="lab-nav"><div className="lab-nav-inner">
-    <a className="brand" href="/" aria-label="GraphLab homepage"><img src="/graphlab.svg" alt="" width="32" height="32" /> GraphLab</a>
+    <a className="brand" href="/" aria-label="DSexplore homepage"><img src="/graphlab.svg" alt="" width="32" height="32" /> DSexplore</a>
   </div></header>
 }
 
@@ -26,19 +26,21 @@ function Diagram({ name }: { name: string }) {
 
 export function Home() {
   return <div className="lab-site"><Navigation /><main className="lab-home">
-    <h1>Explore data structures</h1>
-    <p>Build a structure and step through what the algorithm does.</p>
-    <div className="lab-options">{sections.map(({ name, path, description, icon: Icon }) => (
-      <a className="lab-option" key={path} href={path}>
-        <Diagram name={name} />
-        <div className="lab-option-title"><Icon size={19} /><h2>{name}</h2><ArrowUpRight size={17} /></div>
-        <p>{description}</p>
-      </a>
-    ))}</div>
-    <section className="lab-about" id="about" aria-labelledby="about-heading">
-      <h2 id="about-heading">About GraphLab</h2>
-      <p>GraphLab is an interactive way to learn data structures. Build a graph, tree, hash table, or array and use playback to see how each algorithm works, one step at a time.</p>
+    <section className="lab-about" id="about" aria-label="About DSexplore">
+      <h1>DSexplore</h1>
+      <p>Learn data structures by building them. Choose a workspace, try the sample or enter your own data, then play or step through an algorithm to see each decision.</p>
     </section>
+    <div className="lab-options">{sections.map(({ name, path, description }) => {
+      const slug = path.slice(1)
+      return <a className="lab-option" key={path} href={path} aria-labelledby={`${slug}-title`} aria-describedby={`${slug}-description`}>
+        <Diagram name={name} />
+        <div className="lab-option-copy">
+          <h2 id={`${slug}-title`}>{name}</h2>
+          <p id={`${slug}-description`}>{description}</p>
+        </div>
+        <ChevronRight className="lab-option-arrow" size={18} aria-hidden="true" />
+      </a>
+    })}</div>
   </main></div>
 }
 

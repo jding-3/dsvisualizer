@@ -2,14 +2,17 @@ import { expect, test } from '@playwright/test'
 
 test('opens the home choices and supports direct routes and refresh', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Explore data structures' })).toBeVisible()
+  await expect(page).toHaveTitle(/DSexplore/)
+  const about = page.getByRole('region', { name: 'About DSexplore' })
+  await expect(about.getByRole('heading', { name: 'DSexplore', exact: true })).toBeVisible()
   await expect(page.getByRole('banner').getByRole('link')).toHaveCount(1)
-  await expect(page.getByRole('heading', { name: 'About GraphLab' })).toBeVisible()
+  const firstCard = page.locator('main').getByRole('link', { name: 'Graphs', exact: true })
+  expect((await about.boundingBox())!.y + (await about.boundingBox())!.height).toBeLessThan((await firstCard.boundingBox())!.y)
   for (const [path, label] of [['graphs', 'Graphs'], ['trees', 'Trees'], ['hashing', 'Hashing'], ['arrays', 'Arrays']]) {
-    await page.locator('main').getByRole('link', { name: new RegExp(label) }).click()
+    await page.locator('main').getByRole('link', { name: label, exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`/${path}$`))
     expect((await page.reload())?.status()).toBe(200)
-    await page.getByRole('link', { name: /GraphLab home/ }).click()
+    await page.getByRole('link', { name: /DSexplore home/ }).click()
   }
 })
 

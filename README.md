@@ -1,4 +1,4 @@
-# GraphLab
+# DSexplore
 
 The homepage links to Graphs, Trees, Hashing, and Arrays. The three new labs restore committed changes within the current browser tab. Graph sharing is available in the Graphs workspace.
 
