@@ -18,8 +18,8 @@
 .lab-about p { max-width: 56ch; margin: .95rem auto 0; color: #425173; font-size: clamp(1rem, 2vw, 1.25rem); line-height: 1.5; }
 @media (prefers-reduced-motion: no-preference) {
   .lab-about h1, .lab-about p { animation: home-intro 440ms cubic-bezier(.2, .7, .2, 1) both; }
-  .lab-about h1 { animation-delay: 1s; }
-  .lab-about p { animation-delay: 1.44s; }
+  .lab-about h1 { animation-delay: 750ms; }
+  .lab-about p { animation-delay: 1.19s; }
 }
 @keyframes home-intro {
   from { opacity: 0; transform: translateY(.35rem); }

@@ -86,8 +86,8 @@ test('stages the homepage intro and loops demos only while fully visible', async
   await page.clock.install()
   await page.goto('/')
   const about = page.getByRole('region', { name: 'About DSvisualizer' })
-  await expect(about.getByRole('heading')).toHaveCSS('animation-delay', '1s')
-  await expect(about.locator('p')).toHaveCSS('animation-delay', '1.44s')
+  await expect(about.getByRole('heading')).toHaveCSS('animation-delay', '0.75s')
+  await expect(about.locator('p')).toHaveCSS('animation-delay', '1.19s')
 
   const graphs = page.getByRole('region', { name: 'Graphs', exact: true })
   const preview = await graphs.locator('figure').boundingBox()
