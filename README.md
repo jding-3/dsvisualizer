@@ -2,7 +2,8 @@
 
 Build data structures and see how algorithms work, one step at a time.
 
-Live at graph-visualizer.app.space
+Live at [Link Text](https://graph-visualizer.app.space/)
+
 
 ## Run locally
 
