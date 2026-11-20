@@ -3,7 +3,7 @@ import type { Preview } from './homePreviews'
 
 const motionQuery = '(prefers-reduced-motion: reduce)'
 
-export function HomePreview({ title, frames }: Preview) {
+export function HomePreview({ title, frames, ready }: Preview & { ready: boolean }) {
   const figure = useRef<HTMLElement>(null)
   const last = frames.length - 1
   const [index, setIndex] = useState(() => window.matchMedia(motionQuery).matches ? last : 0)
@@ -28,7 +28,7 @@ export function HomePreview({ title, frames }: Preview) {
     function restart() {
       window.clearTimeout(timeout)
       setIndex(motion.matches ? last : 0)
-      if (fullyVisible && !document.hidden && !motion.matches) schedule(0)
+      if (ready && fullyVisible && !document.hidden && !motion.matches) schedule(0)
     }
 
     function observe() {
@@ -57,7 +57,7 @@ export function HomePreview({ title, frames }: Preview) {
       document.removeEventListener('visibilitychange', restart)
       window.clearTimeout(timeout)
     }
-  }, [last])
+  }, [last, ready])
 
   const frame = frames[index]
   return <figure ref={figure} className="home-preview">

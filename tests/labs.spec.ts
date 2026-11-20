@@ -134,3 +134,31 @@ test('shows static demo results with reduced motion', async ({ page }) => {
     await expect(section.locator('figcaption')).toContainText(result)
   }
 })
+
+test('reveals visible cards one at a time after the tagline and waits for scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 1152, height: 1180 })
+  await page.addInitScript(() => {
+    const events: string[] = []
+    function record(event: Event) {
+      const element = event.target
+      if (!(element instanceof HTMLElement)) return
+      const name = element.matches('.lab-about p') ? 'tagline' : element.dataset.topic
+      if (!name) return
+      events.push(`${name}:${event.type}`)
+      document.documentElement.dataset.animationEvents = events.join(' ')
+    }
+    document.addEventListener('animationstart', record)
+    document.addEventListener('animationend', record)
+  })
+  await page.goto('/')
+  const documentRoot = page.locator('html')
+  await expect(documentRoot).toHaveAttribute('data-animation-events',
+    'tagline:animationstart tagline:animationend graphs:animationstart graphs:animationend trees:animationstart trees:animationend')
+
+  const arrays = page.getByRole('region', { name: 'Arrays', exact: true })
+  await expect(arrays).toHaveAttribute('data-reveal', 'waiting')
+  await expect(arrays).toHaveCSS('opacity', '0')
+  await arrays.scrollIntoViewIfNeeded()
+  await expect(arrays).toHaveAttribute('data-reveal', 'shown')
+  await expect(arrays).toHaveCSS('opacity', '1')
+})

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Playback } from '../components/Playback'
 import { HomePreview } from './HomePreview'
@@ -19,34 +19,71 @@ function Navigation() {
 }
 
 export function Home() {
+  const tagline = useRef<HTMLParagraphElement>(null)
   const options = useRef<HTMLDivElement>(null)
+  const [revealed, setRevealed] = useState<string[]>([])
 
   useLayoutEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const rows = Array.from(options.current!.querySelectorAll<HTMLElement>('.lab-option-row'))
+    const inView = new Set<Element>()
+    let introFinished = false
+    let revealing = false
+    let disposed = false
+
+    function afterAnimation(element: Element, onFinish: () => void) {
+      void Promise.allSettled(element.getAnimations().map((animation) => animation.finished)).then(() => {
+        if (!disposed) onFinish()
+      })
+    }
+
+    function revealNext() {
+      if (!introFinished || revealing) return
+      const row = rows.find((option) => option.dataset.reveal === 'waiting' && inView.has(option))
+      if (!row) return
+
+      revealing = true
+      observer.unobserve(row)
+      inView.delete(row)
+      row.dataset.reveal = 'revealing'
+      afterAnimation(row, () => {
+        row.dataset.reveal = 'shown'
+        setRevealed((previous) => [...previous, row.dataset.topic!])
+        revealing = false
+        revealNext()
+      })
+    }
+
     const observer = new IntersectionObserver((entries) => {
       for (const { target, intersectionRatio } of entries) {
-        if (intersectionRatio < 0.1) continue
-        target.setAttribute('data-reveal', 'shown')
-        observer.unobserve(target)
+        if (intersectionRatio >= 0.1) inView.add(target)
+        else inView.delete(target)
       }
+      revealNext()
     }, { threshold: 0.1 })
 
-    for (const row of options.current!.children) {
-      if (row.getBoundingClientRect().top < document.documentElement.clientHeight) continue
-      row.setAttribute('data-reveal', 'waiting')
+    for (const row of rows) {
+      row.dataset.reveal = 'waiting'
       observer.observe(row)
     }
-    return () => observer.disconnect()
+    afterAnimation(tagline.current!, () => {
+      introFinished = true
+      revealNext()
+    })
+    return () => {
+      disposed = true
+      observer.disconnect()
+      rows.forEach((row) => delete row.dataset.reveal)
+    }
   }, [])
 
   return <div className="lab-site lab-site-home"><Navigation /><main className="lab-home">
     <section className="lab-about" id="about" aria-label="About DSvisualizer">
       <h1>DSvisualizer</h1>
-      <p>Build data structures and see how algorithms work, one step at a time.</p>
+      <p ref={tagline}>Build data structures and see how algorithms work, one step at a time.</p>
     </section>
     <div className="lab-options" ref={options}>{sections.map(({ name, slug, description }) => (
       <section className="lab-option-row" data-topic={slug} key={slug} aria-labelledby={`${slug}-title`}>
-        <HomePreview {...previews[slug]} />
+        <HomePreview {...previews[slug]} ready={revealed.includes(slug)} />
         <a className="lab-option" href={`/${slug}`} aria-labelledby={`${slug}-title`} aria-describedby={`${slug}-description`}>
           <h2 id={`${slug}-title`}>{name}</h2>
           <p id={`${slug}-description`}>{description}</p>
