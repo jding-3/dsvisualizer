@@ -48,28 +48,8 @@
   padding: clamp(.75rem, 2.35vw, 1.5rem);
   background: var(--topic-surface);
 }
-.home-preview-header,
 .home-preview-caption { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
-.home-preview-title { color: var(--topic-ink); font-size: clamp(.9rem, 1.7vw, 1.05rem); font-weight: 700; letter-spacing: -.015em; }
-.home-preview-control {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  gap: .35rem;
-  min-width: 6.25rem;
-  min-height: 2.75rem;
-  padding: .25rem .6rem;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  color: var(--topic-ink);
-  background: #fff;
-  font-size: .8rem;
-  font-weight: 700;
-  touch-action: manipulation;
-}
-.home-preview-control:hover { border-color: var(--topic-line); }
-.home-preview-control:active { background: var(--topic-quiet); transform: scale(.97); }
+.home-preview-title { display: flex; align-items: center; min-height: 2.75rem; color: var(--topic-ink); font-size: clamp(.9rem, 1.7vw, 1.05rem); font-weight: 700; letter-spacing: -.015em; }
 .home-preview-stage { display: grid; place-items: center; min-width: 0; padding-block: .35rem; }
 .home-preview-diagram { display: block; width: min(100%, 27rem); height: auto; overflow: visible; }
 .home-preview-caption {
@@ -183,7 +163,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .lab-site *, .lab-site *::before, .lab-site *::after { animation: none; transition: none; }
-  .home-preview-control:active { transform: none; }
 }
 
 .learning-resources { margin-top: 1rem; border: 1px solid #cdd7ed; border-radius: .75rem; background: #fff; }

@@ -81,7 +81,7 @@ test('offers curated learning links in a collapsed homepage panel', async ({ pag
   }
 })
 
-test('stages the homepage intro and lets visitors pause and replay a visible demo', async ({ page }) => {
+test('stages the homepage intro and loops demos only while fully visible', async ({ page }) => {
   await page.setViewportSize({ width: 1152, height: 800 })
   await page.clock.install()
   await page.goto('/')
@@ -99,37 +99,38 @@ test('stages the homepage intro and lets visitors pause and replay a visible dem
   expect((await arrays.boundingBox())!.y).toBeGreaterThan(800)
   await expect(arrays.locator('figcaption')).toContainText('Compare neighbors')
 
-  await graphs.getByRole('button', { name: /Pause/ }).click()
-  const pausedCaption = await graphs.locator('figcaption').textContent()
+  const caption = graphs.locator('figcaption')
+  await expect(graphs.getByRole('button')).toHaveCount(0)
+  await expect(caption).toContainText('Visit node A.')
+  await page.clock.runFor(6160)
+  await expect(caption).toContainText('Shortest path: A → B → D.')
+  await expect(caption).toContainText('Start at A', { timeout: 3000 })
+
+  await expect(caption).toContainText('Visit node A.')
+  await page.evaluate(() => {
+    const card = document.querySelector('[data-topic="graphs"] figure')!
+    window.scrollBy(0, card.getBoundingClientRect().top - 20)
+  })
+  await expect(caption).toContainText('Start at A')
   await page.clock.runFor(2000)
-  await expect(graphs.locator('figcaption')).toHaveText(pausedCaption!)
-  await graphs.getByRole('button', { name: /Play/ }).click()
-  await expect(graphs.locator('figcaption')).toContainText('Shortest path: A → B → D.', { timeout: 10_000 })
-  await graphs.getByRole('button', { name: /Replay/ }).click()
-  await expect(graphs.locator('figcaption')).toContainText('Start at A')
+  await expect(caption).toContainText('Start at A')
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await expect(caption).toContainText('Visit node A.')
 })
 
-test('lets users step through homepage previews with reduced motion', async ({ page }) => {
+test('shows static demo results with reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('animation-name', 'none')
   const demos = [
-    ['Graphs', 'Shortest path: A → B → D.', 'Start at A'],
-    ['Trees', 'Found 6.', 'Find the value 6'],
-    ['Hashing', 'Insert “h” at bucket 0.', 'Insert h into a table'],
-    ['Arrays', 'The array is sorted in ascending order.', 'Compare neighbors'],
+    ['Graphs', 'Shortest path: A → B → D.'],
+    ['Trees', 'Found 6.'],
+    ['Hashing', 'Insert “h” at bucket 0.'],
+    ['Arrays', 'The array is sorted in ascending order.'],
   ]
-  for (const [name, result, start] of demos) {
+  for (const [name, result] of demos) {
     const section = page.getByRole('region', { name, exact: true })
-    const control = section.getByRole('button')
-    const caption = section.locator('figcaption')
-    await expect(caption).toContainText(start)
-    for (let i = 0; i < 10 && await section.getByRole('button', { name: /^Next step/ }).isVisible(); i++) {
-      await control.click()
-    }
-    await expect(caption).toContainText(result)
-    await expect(control).toHaveAccessibleName(/^Reset/)
-    await control.click()
-    await expect(caption).toContainText(start)
+    await expect(section.getByRole('button')).toHaveCount(0)
+    await expect(section.locator('figcaption')).toContainText(result)
   }
 })
