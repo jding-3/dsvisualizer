@@ -21,18 +21,6 @@ npm run test:e2e
 npm run build
 ```
 
-## Deploy to DeepSpace
-
-Sign in, register the app, then commit any pending changes before deploying from the default DeepSpace source.
-
-```sh
-npx deepspace auth whoami
-npx deepspace app init
-npm run deploy
-```
-
-The browser suite uses Playwright Chromium. Install it with `npx playwright install chromium` or set `DEEPSPACE_TEST_BROWSER_EXECUTABLE_PATH` to an installed Chrome executable.
-
 ## Design
 
 - `client/algorithms/` walks an adjacency list and returns independent snapshots. BFS finds a route with the fewest edges. DFS follows a branch to completion before backtracking. Both honor direction and ignore edge weights.
