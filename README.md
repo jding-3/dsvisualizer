@@ -1,8 +1,7 @@
 # DSvisualizer
 
-The homepage links to Graphs, Trees, Hashing, and Arrays. The three new labs restore committed changes within the current browser tab. Graph sharing is available in the Graphs workspace.
+Build data structures and see how algorithms work, one step at a time.
 
-Build a graph, watch BFS or DFS one step at a time, and save a public snapshot that opens from a shareable link.
 
 ## Run locally
 
