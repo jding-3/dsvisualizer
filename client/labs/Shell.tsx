@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useLayoutEffect, useRef, type ReactNode } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Playback } from '../components/Playback'
 import { HomePreview } from './HomePreview'
@@ -19,12 +19,32 @@ function Navigation() {
 }
 
 export function Home() {
+  const options = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const observer = new IntersectionObserver((entries) => {
+      for (const { target, intersectionRatio } of entries) {
+        if (intersectionRatio < 0.1) continue
+        target.setAttribute('data-reveal', 'shown')
+        observer.unobserve(target)
+      }
+    }, { threshold: 0.1 })
+
+    for (const row of options.current!.children) {
+      if (row.getBoundingClientRect().top < document.documentElement.clientHeight) continue
+      row.setAttribute('data-reveal', 'waiting')
+      observer.observe(row)
+    }
+    return () => observer.disconnect()
+  }, [])
+
   return <div className="lab-site lab-site-home"><Navigation /><main className="lab-home">
     <section className="lab-about" id="about" aria-label="About DSvisualizer">
       <h1>DSvisualizer</h1>
       <p>Build data structures and see how algorithms work, one step at a time.</p>
     </section>
-    <div className="lab-options">{sections.map(({ name, slug, description }) => (
+    <div className="lab-options" ref={options}>{sections.map(({ name, slug, description }) => (
       <section className="lab-option-row" data-topic={slug} key={slug} aria-labelledby={`${slug}-title`}>
         <HomePreview {...previews[slug]} />
         <a className="lab-option" href={`/${slug}`} aria-labelledby={`${slug}-title`} aria-describedby={`${slug}-description`}>
