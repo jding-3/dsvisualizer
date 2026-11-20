@@ -168,7 +168,8 @@
 
 .learning-resources { margin-top: 1rem; border: 1px solid #cdd7ed; border-radius: .75rem; background: #fff; }
 .lab-home .learning-resources { margin-top: clamp(1.75rem, 4vw, 3.25rem); }
-.learning-resources summary { display: flex; align-items: center; gap: .55rem; padding: .75rem .85rem; cursor: pointer; font-weight: 650; list-style: none; }
+.learning-resources summary { display: flex; align-items: center; gap: .55rem; padding: .75rem .85rem; cursor: pointer; font-weight: 650; list-style: none; border-radius: inherit; }
+.learning-resources[open] summary { border-end-start-radius: 0; border-end-end-radius: 0; }
 .learning-resources summary::-webkit-details-marker { display: none; }
 .learning-resources summary svg:last-child { margin-left: auto; }
 .learning-resources[open] summary svg:last-child { transform: rotate(180deg); }
