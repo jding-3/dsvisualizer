@@ -1,8 +1,9 @@
 # DSvisualizer
 
-The homepage links to Graphs, Trees, Hashing, and Arrays. The three new labs restore committed changes within the current browser tab. Graph sharing is available in the Graphs workspace.
+Build data structures and see how algorithms work, one step at a time.
 
-Build a graph, watch BFS or DFS one step at a time, and save a public snapshot that opens from a shareable link.
+Live at [DSvisualizer](https://graph-visualizer.app.space/)
+
 
 ## Run locally
 
@@ -20,18 +21,6 @@ npm run validate
 npm run test:e2e
 npm run build
 ```
-
-## Deploy to DeepSpace
-
-Sign in, register the app, then commit any pending changes before deploying from the default DeepSpace source.
-
-```sh
-npx deepspace auth whoami
-npx deepspace app init
-npm run deploy
-```
-
-The browser suite uses Playwright Chromium. Install it with `npx playwright install chromium` or set `DEEPSPACE_TEST_BROWSER_EXECUTABLE_PATH` to an installed Chrome executable.
 
 ## Design
 
